@@ -1,83 +1,124 @@
 package pl.fzymek.permissions.activities;
 
-import android.hardware.Camera;
+import android.media.MediaScannerConnection;
 import android.os.Bundle;
+import android.os.Environment;
+import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
-import android.view.View;
-import android.widget.FrameLayout;
+import android.view.SurfaceHolder;
+import android.view.SurfaceView;
 import android.widget.ImageButton;
+
+import net.bozho.easycamera.DefaultEasyCamera;
+import net.bozho.easycamera.EasyCamera;
+
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.Unbinder;
 import pl.fzymek.permissions.R;
-import pl.fzymek.permissions.utils.SystemUI;
-import pl.fzymek.permissions.views.CameraPreview;
+import timber.log.Timber;
 
-public class TakePictureActivity extends AppCompatActivity {
+public class TakePictureActivity extends AppCompatActivity implements SurfaceHolder.Callback {
 
-    View mDecorView;
-    @BindView(R.id.take_picture_btn)
-    ImageButton takePictureBtn;
     @BindView(R.id.camera_surface)
-    FrameLayout cameraView;
-    Camera camera;
-    CameraPreview cameraPreview;
-    Unbinder viewUnbinder;
+    SurfaceView cameraSurface;
+
+    @BindView(R.id.take_picture_btn)
+    ImageButton takePicture;
+
+    EasyCamera camera;
+    EasyCamera.CameraActions cameraActions;
+    Unbinder unbinder;
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_take_picture);
-        bindViews();
-        SystemUI.hide(getWindow().getDecorView());
+        unbinder = ButterKnife.bind(this);
 
-        setupCamera();
+        takePicture.setOnClickListener(view -> {
+            cameraActions.takePicture(EasyCamera.Callbacks.create().withRestartPreviewAfterCallbacks(true).withJpegCallback(
+                    (bytes, camAction) -> {
+
+                        File picsDir = new File(Environment.getExternalStorageDirectory(), "PermissionsApp");
+                        if (!picsDir.exists()) {
+                            picsDir.mkdirs();
+                        }
+
+                        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyymmddhhmmss");
+                        File picture = new File(picsDir, "Pic_" + dateFormat.format(new Date()) + ".jpg");
+
+                        try {
+                            FileOutputStream os = new FileOutputStream(picture);
+                            os.write(bytes);
+                            os.close();
+                        } catch (IOException e) {
+                            Timber.e("Error saving picture", e);
+                            e.printStackTrace();
+                        }
+
+                        MediaScannerConnection.scanFile(TakePictureActivity.this, new String[]{picture.getAbsolutePath()}, new String[]{"image/jpg"}, (s, uri) -> {
+                            Timber.d("saved path: " + s + " as uri: " + uri);
+                        });
+
+                    }));
+        });
+        initCamera();
     }
 
-    private void setupCamera() {
-        releaseCameraAndPreview();
-        camera = getCamera();
-
-        cameraPreview = new CameraPreview(this, camera, cameraView);
-        cameraView.addView(cameraPreview);
-        cameraPreview.startPreview();
+    private void initCamera() {
+        Timber.d("Opening camera");
+        if (camera == null) {
+            camera = DefaultEasyCamera.open();
+        }
+        Timber.d("Camera: " + camera);
+        camera.alignCameraAndDisplayOrientation(getWindowManager());
+        cameraSurface.getHolder().addCallback(this);
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        releaseCameraAndPreview();
-        viewUnbinder.unbind();
+        unbinder.unbind();
     }
 
-    private void releaseCameraAndPreview() {
+    @Override
+    protected void onPause() {
+        super.onPause();
+        cameraSurface.getHolder().removeCallback(this);
         if (camera != null) {
             camera.stopPreview();
-            camera.release();
+            camera.close();
             camera = null;
         }
-        if (cameraPreview != null) {
-            cameraPreview.destroyDrawingCache();
-            cameraPreview.release();
+
+    }
+
+    @Override
+    public void surfaceCreated(SurfaceHolder surfaceHolder) {
+        Timber.d("Surface created: " + surfaceHolder + ", " + this);
+    }
+
+    @Override
+    public void surfaceChanged(SurfaceHolder surfaceHolder, int i, int i1, int i2) {
+        Timber.d("Surface changed, starting preview: " + surfaceHolder + ", " + this);
+
+        try {
+            cameraActions = camera.startPreview(surfaceHolder);
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 
-    private void bindViews() {
-        mDecorView = getWindow().getDecorView();
-        viewUnbinder = ButterKnife.bind(this);
-        takePictureBtn.setOnClickListener(view -> takePicture());
+    @Override
+    public void surfaceDestroyed(SurfaceHolder surfaceHolder) {
+        Timber.d("Surface destroyed, stopping preview: " + surfaceHolder + ", " + this);
+        camera.stopPreview();
     }
-
-    private void takePicture() {
-
-    }
-
-    private Camera getCamera() {
-        if (camera == null) {
-            camera = Camera.open();
-        }
-        return camera;
-    }
-
 }

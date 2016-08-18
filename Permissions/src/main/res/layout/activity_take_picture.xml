@@ -6,7 +6,7 @@
     android:orientation="vertical"
     tools:context=".activities.TakePictureActivity">
 
-    <FrameLayout
+    <SurfaceView
         android:id="@+id/camera_surface"
         android:layout_width="match_parent"
         android:layout_height="0dp"
