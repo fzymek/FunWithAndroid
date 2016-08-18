@@ -1,4 +1,4 @@
 <resources>
-    <string name="app_name">Permissions</string>
-    <string name="title_activity_main">MainActivity</string>
+    <string name="app_name">Learning Android Permissions</string>
+    <string name="title_activity_main">Main Activity</string>
 </resources>
