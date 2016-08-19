@@ -17,13 +17,15 @@
         <activity
             android:name=".activities.MainActivity"
             android:label="@string/title_activity_main"
-            android:theme="@style/AppTheme.NoActionBar">
+            android:theme="@style/AppTheme">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".activities.TakePictureActivity" />
+        <activity
+            android:name=".activities.TakePictureActivity"
+            android:theme="@style/AppTheme" />
     </application>
 
 </manifest>

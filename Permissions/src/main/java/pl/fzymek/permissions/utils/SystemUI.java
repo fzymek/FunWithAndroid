@@ -22,6 +22,7 @@ public class SystemUI {
                         | View.SYSTEM_UI_FLAG_IMMERSIVE);
     }
 
+
     public static void show(@NonNull View decorView) {
         decorView.setSystemUiVisibility(
                 View.SYSTEM_UI_FLAG_LAYOUT_STABLE

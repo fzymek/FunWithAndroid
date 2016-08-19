@@ -1,13 +1,20 @@
 package pl.fzymek.permissions.activities;
 
+import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.content.pm.ResolveInfo;
 import android.media.MediaScannerConnection;
 import android.os.Bundle;
 import android.os.Environment;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.design.widget.CoordinatorLayout;
+import android.support.design.widget.FloatingActionButton;
+import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
-import android.widget.ImageButton;
+import android.widget.Toast;
 
 import net.bozho.easycamera.DefaultEasyCamera;
 import net.bozho.easycamera.EasyCamera;
@@ -17,11 +24,13 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.Unbinder;
 import pl.fzymek.permissions.R;
+import pl.fzymek.permissions.utils.SystemUI;
 import timber.log.Timber;
 
 public class TakePictureActivity extends AppCompatActivity implements SurfaceHolder.Callback {
@@ -29,8 +38,8 @@ public class TakePictureActivity extends AppCompatActivity implements SurfaceHol
     @BindView(R.id.camera_surface)
     SurfaceView cameraSurface;
 
-    @BindView(R.id.take_picture_btn)
-    ImageButton takePicture;
+    @BindView(R.id.take_picture_fab)
+    FloatingActionButton takePicture;
 
     EasyCamera camera;
     EasyCamera.CameraActions cameraActions;
@@ -43,61 +52,75 @@ public class TakePictureActivity extends AppCompatActivity implements SurfaceHol
         unbinder = ButterKnife.bind(this);
 
         takePicture.setOnClickListener(view -> {
-            cameraActions.takePicture(EasyCamera.Callbacks.create().withRestartPreviewAfterCallbacks(true).withJpegCallback(
-                    (bytes, camAction) -> {
+            cameraActions.takePicture(EasyCamera.Callbacks.create().withRestartPreviewAfterCallbacks(true)
+                    .withJpegCallback(
+                            (bytes, camAction) -> {
+                                File picture = savePicture(bytes);
 
-                        File picsDir = new File(Environment.getExternalStorageDirectory(), "PermissionsApp");
-                        if (!picsDir.exists()) {
-                            picsDir.mkdirs();
-                        }
+                                MediaScannerConnection.scanFile(TakePictureActivity.this, new String[]{picture.getAbsolutePath()}, new String[]{"image/jpg"}, (s, uri) -> {
+                                    Timber.d("saved path: " + s + " as uri: " + uri);
 
-                        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyymmddhhmmss");
-                        File picture = new File(picsDir, "Pic_" + dateFormat.format(new Date()) + ".jpg");
+                                    Snackbar snackbar = Snackbar.make(view, "" +
+                                            "Picture saved", Snackbar.LENGTH_SHORT);
 
-                        try {
-                            FileOutputStream os = new FileOutputStream(picture);
-                            os.write(bytes);
-                            os.close();
-                        } catch (IOException e) {
-                            Timber.e("Error saving picture", e);
-                            e.printStackTrace();
-                        }
+                                    Intent viewIntent = new Intent(Intent.ACTION_VIEW);
+                                    viewIntent.setDataAndType(uri, "image/*");
 
-                        MediaScannerConnection.scanFile(TakePictureActivity.this, new String[]{picture.getAbsolutePath()}, new String[]{"image/jpg"}, (s, uri) -> {
-                            Timber.d("saved path: " + s + " as uri: " + uri);
-                        });
+                                    List<ResolveInfo> resolveInfos = getPackageManager().queryIntentActivities(viewIntent, PackageManager.MATCH_DEFAULT_ONLY);
+                                    if (resolveInfos.size() > 0) {
+                                        snackbar.setAction("Show", v -> {
+                                            startActivity(viewIntent);
+                                        });
+                                    }
+                                    snackbar.show();
+                                });
 
-                    }));
+                            }));
         });
         initCamera();
+    }
+
+    @NonNull
+    private File savePicture(byte[] bytes) {
+        File picsDir = new File(Environment.getExternalStorageDirectory(), "PermissionsApp");
+        if (!picsDir.exists()) {
+            picsDir.mkdirs();
+        }
+
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyymmddhhmmss");
+        File picture = new File(picsDir, "Pic_" + dateFormat.format(new Date()) + ".jpg");
+
+        try {
+            FileOutputStream os = new FileOutputStream(picture);
+            os.write(bytes);
+            os.close();
+        } catch (IOException e) {
+            Timber.e("Error saving picture");
+            e.printStackTrace();
+        }
+        return picture;
     }
 
     private void initCamera() {
         Timber.d("Opening camera");
         if (camera == null) {
             camera = DefaultEasyCamera.open();
+            camera.alignCameraAndDisplayOrientation(getWindowManager());
         }
         Timber.d("Camera: " + camera);
-        camera.alignCameraAndDisplayOrientation(getWindowManager());
         cameraSurface.getHolder().addCallback(this);
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        unbinder.unbind();
-    }
-
-    @Override
-    protected void onPause() {
-        super.onPause();
         cameraSurface.getHolder().removeCallback(this);
         if (camera != null) {
             camera.stopPreview();
             camera.close();
             camera = null;
         }
-
+        unbinder.unbind();
     }
 
     @Override
