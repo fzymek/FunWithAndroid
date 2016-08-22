@@ -1,6 +1,7 @@
 package pl.fzymek.permissions.activities;
 
 import android.Manifest;
+import android.annotation.SuppressLint;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -108,7 +109,7 @@ public class TakePictureActivity extends AppCompatActivity implements SurfaceHol
         Timber.d("handleCameraPermissionResult() called with: permissions = [%s], grantResults = [%s]", Arrays.toString(permissions), Arrays.toString(grantResults));
         if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
             Timber.d("Permission granted");
-            startCameraPreview();
+            openCamera();
         } else {
             Timber.d("Permission denied");
         }
@@ -141,7 +142,7 @@ public class TakePictureActivity extends AppCompatActivity implements SurfaceHol
             requestPermission(Manifest.permission.CAMERA);
             return;
         }
-        startCameraPreview();
+        openCamera();
     }
 
     private boolean hasPermission(@NonNull String permission) {
@@ -172,13 +173,18 @@ public class TakePictureActivity extends AppCompatActivity implements SurfaceHol
         }
     }
 
-    private void startCameraPreview() {
+    private void openCamera() {
         Timber.d("Opening camera");
         if (camera == null) {
             camera = DefaultEasyCamera.open();
             camera.alignCameraAndDisplayOrientation(getWindowManager());
         }
         cameraSurface.getHolder().addCallback(this);
+        startCameraPreview();
+
+    }
+
+    private void startCameraPreview() {
         try {
             cameraActions = camera.startPreview(cameraSurface.getHolder());
         } catch (IOException e) {
@@ -199,11 +205,12 @@ public class TakePictureActivity extends AppCompatActivity implements SurfaceHol
     private File savePicture(byte[] bytes) {
         File picsDir = new File(Environment.getExternalStorageDirectory(), "PermissionsApp");
         if (!picsDir.exists()) {
-            //noinspection ResultOfMethodCallIgnored
             Timber.d("Creating directory %s ", picsDir.getAbsolutePath());
+            //noinspection ResultOfMethodCallIgnored
             picsDir.mkdirs();
         }
 
+        @SuppressLint("SimpleDateFormat")
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyymmddhhmmss");
         File picture = new File(picsDir, "Pic_" + dateFormat.format(new Date()) + ".jpg");
 
