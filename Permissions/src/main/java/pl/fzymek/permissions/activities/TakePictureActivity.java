@@ -54,6 +54,7 @@ public class TakePictureActivity extends AppCompatActivity implements SurfaceHol
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        Timber.d("onCreate");
         setContentView(R.layout.activity_take_picture);
         unbinder = ButterKnife.bind(this);
 
@@ -98,10 +99,13 @@ public class TakePictureActivity extends AppCompatActivity implements SurfaceHol
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        Timber.d("onRequestPermissionsResult() called with: requestCode = [%d], permissions = [%s], grantResults = [%s]", requestCode, Arrays.toString(permissions), Arrays.toString(grantResults));
         switch (requestCode) {
             case CAMERA_PERMISSION_REQUEST_CODE:
                 handleCameraPermissionResult(permissions, grantResults);
                 break;
+            default:
+                super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         }
     }
 
@@ -153,22 +157,20 @@ public class TakePictureActivity extends AppCompatActivity implements SurfaceHol
     private void requestPermission(@NonNull String permission) {
         Timber.d("Requesting permission: %s", permission);
         if (ActivityCompat.shouldShowRequestPermissionRationale(this,
-                Manifest.permission.READ_CONTACTS)) {
+                Manifest.permission.CAMERA)) {
             //show permission explanation
-
+            Timber.d("Showing permissions rationale");
             AlertDialog.Builder builder = new AlertDialog.Builder(this)
                     .setTitle("Camera needed")
                     .setMessage("Camera permission is needed in order to take pictures.")
-                    .setNeutralButton("Ok", new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialogInterface, int i) {
-                            dialogInterface.dismiss();
-                        }
-                    });
-
+                    .setNeutralButton("Ok", (dialogInterface, i) -> {
+                        dialogInterface.dismiss();
+                    }).setOnDismissListener((dialogInterface -> {
+                        ActivityCompat.requestPermissions(this, new String[]{permission}, CAMERA_PERMISSION_REQUEST_CODE);
+                    }));
             builder.show();
-
         } else {
+            Timber.d("Requesting permissions");
             ActivityCompat.requestPermissions(this, new String[]{permission}, CAMERA_PERMISSION_REQUEST_CODE);
         }
     }
@@ -186,6 +188,7 @@ public class TakePictureActivity extends AppCompatActivity implements SurfaceHol
 
     private void startCameraPreview() {
         try {
+            Timber.d("Starting camera preview");
             cameraActions = camera.startPreview(cameraSurface.getHolder());
         } catch (IOException e) {
             e.printStackTrace();
