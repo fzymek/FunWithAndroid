@@ -1,14 +1,11 @@
 package pl.fzymek.permissions.activities;
 
 import android.Manifest;
-import android.annotation.SuppressLint;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.media.MediaScannerConnection;
 import android.os.Bundle;
-import android.os.Environment;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
@@ -19,6 +16,14 @@ import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
+import android.view.View;
+
+import com.karumi.dexter.Dexter;
+import com.karumi.dexter.PermissionToken;
+import com.karumi.dexter.listener.PermissionDeniedResponse;
+import com.karumi.dexter.listener.PermissionGrantedResponse;
+import com.karumi.dexter.listener.PermissionRequest;
+import com.karumi.dexter.listener.single.PermissionListener;
 
 import net.bozho.easycamera.DefaultEasyCamera;
 import net.bozho.easycamera.EasyCamera;
@@ -26,9 +31,7 @@ import net.bozho.easycamera.EasyCamera;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.text.SimpleDateFormat;
 import java.util.Arrays;
-import java.util.Date;
 import java.util.List;
 
 import butterknife.BindView;
@@ -36,6 +39,9 @@ import butterknife.ButterKnife;
 import butterknife.Unbinder;
 import pl.fzymek.permissions.R;
 import timber.log.Timber;
+
+import static pl.fzymek.permissions.utils.PictureUtils.createPictureDirectory;
+import static pl.fzymek.permissions.utils.PictureUtils.createPictureFile;
 
 public class TakePictureActivity extends AppCompatActivity implements SurfaceHolder.Callback {
 
@@ -50,12 +56,14 @@ public class TakePictureActivity extends AppCompatActivity implements SurfaceHol
     EasyCamera camera;
     EasyCamera.CameraActions cameraActions;
     Unbinder unbinder;
+    private PermissionListener listener;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         Timber.d("onCreate");
         setContentView(R.layout.activity_take_picture);
+        configureDexter();
         unbinder = ButterKnife.bind(this);
 
         takePicture.setOnClickListener(view -> {
@@ -69,32 +77,66 @@ public class TakePictureActivity extends AppCompatActivity implements SurfaceHol
                     .withJpegCallback(
                             (bytes, camAction) -> {
                                 Timber.d("Take picture clicked");
-                                File picture = savePicture(bytes);
 
-                                Timber.d("Adding taken picture to media collection");
-                                MediaScannerConnection.scanFile(TakePictureActivity.this, new String[]{picture.getAbsolutePath()}, new String[]{"image/jpg"}, (s, uri) -> {
-                                    Timber.d("Picture %s added to gallery under %s", s, uri);
+                                if (Dexter.isRequestOngoing()) return;
 
-                                    Snackbar snackbar = Snackbar.make(view, "" +
-                                            "Picture saved", Snackbar.LENGTH_SHORT);
-
-                                    Intent viewIntent = new Intent(Intent.ACTION_VIEW);
-                                    viewIntent.setDataAndType(uri, "image/*");
-
-                                    List<ResolveInfo> resolveInfos = getPackageManager().queryIntentActivities(viewIntent, PackageManager.MATCH_DEFAULT_ONLY);
-                                    if (resolveInfos.size() > 0) {
-                                        snackbar.setAction("Show", v -> {
-                                            Timber.d("Opening picture in gallery");
-                                            startActivity(viewIntent);
-                                        });
+                                listener = new PermissionListener() {
+                                    @Override
+                                    public void onPermissionGranted(PermissionGrantedResponse response) {
+                                        Timber.d("Permission granted");
+                                        File picture = savePicture(bytes);
+                                        indexPictureInGallery(view, picture);
                                     }
-                                    snackbar.show();
-                                });
+
+                                    @Override
+                                    public void onPermissionDenied(PermissionDeniedResponse response) {
+                                        Timber.d("Permission denied");
+                                    }
+
+                                    @Override
+                                    public void onPermissionRationaleShouldBeShown(PermissionRequest permission, PermissionToken token) {
+                                        AlertDialog.Builder builder = new AlertDialog.Builder(TakePictureActivity.this)
+                                                .setTitle("Permission request")
+                                                .setMessage("We need your permission to save files")
+                                                .setNeutralButton("OK", (dialogInterface, i) -> {
+                                                    dialogInterface.dismiss();
+                                                    token.continuePermissionRequest();
+                                                });
+                                        builder.show();
+                                    }
+                                };
+                                Dexter.checkPermission(listener, Manifest.permission.WRITE_EXTERNAL_STORAGE);
 
                             }));
         });
 
         initCamera();
+    }
+
+    private void configureDexter() {
+        Dexter.continuePendingRequestIfPossible(listener);
+    }
+
+    private void indexPictureInGallery(View view, File picture) {
+        Timber.d("Adding taken picture to media collection");
+        MediaScannerConnection.scanFile(TakePictureActivity.this, new String[]{picture.getAbsolutePath()}, new String[]{"image/jpg"}, (s, uri) -> {
+            Timber.d("Picture %s added to gallery under %s", s, uri);
+
+            Snackbar snackbar = Snackbar.make(view, "" +
+                    "Picture saved", Snackbar.LENGTH_SHORT);
+
+            Intent viewIntent = new Intent(Intent.ACTION_VIEW);
+            viewIntent.setDataAndType(uri, "image/*");
+
+            List<ResolveInfo> resolveInfos = getPackageManager().queryIntentActivities(viewIntent, PackageManager.MATCH_DEFAULT_ONLY);
+            if (resolveInfos.size() > 0) {
+                snackbar.setAction("Show", v -> {
+                    Timber.d("Opening picture in gallery");
+                    startActivity(viewIntent);
+                });
+            }
+            snackbar.show();
+        });
     }
 
     @Override
@@ -206,16 +248,9 @@ public class TakePictureActivity extends AppCompatActivity implements SurfaceHol
 
     @NonNull
     private File savePicture(byte[] bytes) {
-        File picsDir = new File(Environment.getExternalStorageDirectory(), "PermissionsApp");
-        if (!picsDir.exists()) {
-            Timber.d("Creating directory %s ", picsDir.getAbsolutePath());
-            //noinspection ResultOfMethodCallIgnored
-            picsDir.mkdirs();
-        }
+        File picsDir = createPictureDirectory();
 
-        @SuppressLint("SimpleDateFormat")
-        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyymmddhhmmss");
-        File picture = new File(picsDir, "Pic_" + dateFormat.format(new Date()) + ".jpg");
+        File picture = createPictureFile(picsDir);
 
         try {
             Timber.d("Saving file %s", picture.getAbsolutePath());
@@ -229,4 +264,6 @@ public class TakePictureActivity extends AppCompatActivity implements SurfaceHol
 
         return picture;
     }
+
+
 }

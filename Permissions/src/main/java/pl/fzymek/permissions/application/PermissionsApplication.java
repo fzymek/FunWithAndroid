@@ -2,7 +2,7 @@ package pl.fzymek.permissions.application;
 
 import android.app.Application;
 
-import com.squareup.leakcanary.LeakCanary;
+import com.karumi.dexter.Dexter;
 
 import timber.log.Timber;
 
@@ -14,7 +14,7 @@ public class PermissionsApplication extends Application {
     @Override
     public void onCreate() {
         super.onCreate();
-        LeakCanary.install(this);
         Timber.plant(new Timber.DebugTree());
+        Dexter.initialize(this);
     }
 }
