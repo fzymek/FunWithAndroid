@@ -1,5 +1,6 @@
 package pl.fzymek.applister.activity;
 
+import android.content.Intent;
 import android.content.pm.ResolveInfo;
 import android.os.Bundle;
 import android.support.design.widget.Snackbar;
@@ -72,6 +73,11 @@ public class MainActivity extends AppCompatActivity implements MainActivityUI {
         recyclerView.setHasFixedSize(true);
         layoutManager = new LinearLayoutManager(this);
         adapter = new AppListAdapter(getPackageManager());
+        adapter.setOnItemClickListener((info -> {
+            Intent details = new Intent(this, InstalledAppDetailsActivity.class);
+            details.putExtra(InstalledAppDetailsActivity.APP_PACKAGE_NAME, info.activityInfo.packageName);
+            startActivity(details);
+        }));
 
         recyclerView.setLayoutManager(layoutManager);
         recyclerView.setAdapter(adapter);

@@ -24,6 +24,7 @@ public class AppListAdapter extends RecyclerView.Adapter<AppListAdapter.AppDataV
 
     final List<ResolveInfo> apps = new ArrayList<>();
     private final PackageManager pm;
+    private OnItemClickListener onItemClickListener;
 
     public AppListAdapter(PackageManager pm) {
         this.pm = pm;
@@ -55,7 +56,11 @@ public class AppListAdapter extends RecyclerView.Adapter<AppListAdapter.AppDataV
         notifyItemInserted(size);
     }
 
-    public class AppDataVH extends RecyclerView.ViewHolder {
+    public void setOnItemClickListener(OnItemClickListener onItemClickListener) {
+        this.onItemClickListener = onItemClickListener;
+    }
+
+    public class AppDataVH extends RecyclerView.ViewHolder implements View.OnClickListener {
 
         @BindView(android.R.id.icon)
         ImageView icon;
@@ -65,6 +70,18 @@ public class AppListAdapter extends RecyclerView.Adapter<AppListAdapter.AppDataV
         public AppDataVH(View itemView) {
             super(itemView);
             ButterKnife.bind(this, itemView);
+            itemView.setOnClickListener(this);
         }
+
+        @Override
+        public void onClick(View view) {
+            if (onItemClickListener != null) {
+                onItemClickListener.onItemClicked(apps.get(getAdapterPosition()));
+            }
+        }
+    }
+
+    public interface OnItemClickListener {
+        void onItemClicked(ResolveInfo info);
     }
 }
