@@ -5,7 +5,7 @@ import android.content.pm.ResolveInfo;
 /**
  * Created by filip on 29.08.2016.
  */
-public interface MainActivityUI {
+public interface AppListUI {
 
     void onLoadingStarted();
 

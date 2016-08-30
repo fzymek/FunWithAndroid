@@ -8,7 +8,7 @@ import android.content.pm.ResolveInfo;
 import java.util.Collections;
 import java.util.List;
 
-import pl.fzymek.applister.ui.MainActivityUI;
+import pl.fzymek.applister.ui.AppListUI;
 import rx.Observable;
 import rx.Subscriber;
 import timber.log.Timber;
@@ -16,17 +16,17 @@ import timber.log.Timber;
 /**
  * Created by filip on 29.08.2016.
  */
-public class MainActivityController {
+public class AppListController {
 
     protected Activity activity;
-    private MainActivityUI ui;
+    private AppListUI ui;
     private final InstalledAppSubscriber subscriber = new InstalledAppSubscriber();
 
-    public MainActivityController(Activity activity) {
+    public AppListController(Activity activity) {
         this.activity = activity;
     }
 
-    public void setUi(MainActivityUI ui) {
+    public void setUi(AppListUI ui) {
         this.ui = ui;
     }
 

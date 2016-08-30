@@ -76,12 +76,12 @@ public class AppListAdapter extends RecyclerView.Adapter<AppListAdapter.AppDataV
         @Override
         public void onClick(View view) {
             if (onItemClickListener != null) {
-                onItemClickListener.onItemClicked(apps.get(getAdapterPosition()));
+                onItemClickListener.onItemClicked(view, apps.get(getAdapterPosition()));
             }
         }
     }
 
     public interface OnItemClickListener {
-        void onItemClicked(ResolveInfo info);
+        void onItemClicked(View view, ResolveInfo info);
     }
 }
