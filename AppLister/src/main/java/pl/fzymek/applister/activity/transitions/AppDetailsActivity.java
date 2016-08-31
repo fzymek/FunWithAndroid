@@ -25,11 +25,7 @@ import pl.fzymek.applister.R;
 
 public class AppDetailsActivity extends AppCompatActivity {
 
-    public static final String PACKAGE = "pl.fzymek.applister.activity.transitions";
-    public static final String PACKAGE_NAME = PACKAGE + ".package_name";
-    public static final String ORIENTATION = PACKAGE + ".orientation";
-    public static final String LEFT = PACKAGE + ".left";
-    public static final String TOP = PACKAGE + ".top";
+    private static final String PACKAGE = "pl.fzymek.applister.activity.transitions";
     public static final String INFO = PACKAGE + ".info";
 
     private final static long ANIMATION_DURATION = TimeUnit.MILLISECONDS.toMillis(500);
@@ -46,10 +42,7 @@ public class AppDetailsActivity extends AppCompatActivity {
     @BindView(R.id.title_container)
     LinearLayout titleContainer;
     Unbinder unbinder;
-    int orientation;
     private ResolveInfo info;
-    private int thumbnailLeft, leftDelta;
-    private int thumbnailTop, topDelta;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -64,9 +57,6 @@ public class AppDetailsActivity extends AppCompatActivity {
     private void readArgumentsFromBundle(Intent intent) {
         Bundle extras = intent.getExtras();
         info = extras.getParcelable(INFO);
-        thumbnailLeft = extras.getInt(LEFT);
-        thumbnailTop = extras.getInt(TOP);
-        orientation = extras.getInt(ORIENTATION);
     }
 
     private void setUpFromBundle(Bundle savedInstanceState) {
@@ -83,7 +73,6 @@ public class AppDetailsActivity extends AppCompatActivity {
                     icon.getViewTreeObserver().removeOnPreDrawListener(this);
                     int screenLocation[] = new int[2];
                     icon.getLocationOnScreen(screenLocation);
-                    leftDelta = thumbnailLeft - screenLocation[0];
 
                     runEnterAnimation();
 

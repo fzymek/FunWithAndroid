@@ -8,8 +8,6 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
-import android.widget.ImageView;
-import android.widget.TextView;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -85,19 +83,7 @@ public class AppListActivity extends AppCompatActivity implements AppListUI {
         adapter = new AppListAdapter(getPackageManager());
         adapter.setOnItemClickListener((view, info) -> {
             Intent details = new Intent(this, AppDetailsActivity.class);
-
-            ImageView icon = ButterKnife.findById(view, android.R.id.icon);
-//            TextView text = ButterKnife.findById(view, android.R.id.text1);
-
-            int screenLocation[] = new int[2];
-            icon.getLocationOnScreen(screenLocation);
-
-            details.putExtra(AppDetailsActivity.PACKAGE_NAME, info.activityInfo.packageName);
-            details.putExtra(AppDetailsActivity.ORIENTATION, getResources().getConfiguration().orientation);
-            details.putExtra(AppDetailsActivity.LEFT, screenLocation[0]);
-            details.putExtra(AppDetailsActivity.TOP, screenLocation[1]);
             details.putExtra(AppDetailsActivity.INFO , info);
-
             startActivity(details);
             overridePendingTransition(0, 0);
         });
