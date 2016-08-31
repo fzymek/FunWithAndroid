@@ -21,7 +21,6 @@
             android:name=".activity.transitions.AppListActivity"
             android:parentActivityName=".activity.ChooseModeActivity" />
         <activity
-            android:theme="@style/Transparent"
             android:name=".activity.transitions.AppDetailsActivity"
             android:parentActivityName=".activity.transitions.AppListActivity" />
 

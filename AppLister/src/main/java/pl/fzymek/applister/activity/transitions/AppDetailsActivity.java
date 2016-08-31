@@ -1,20 +1,19 @@
 package pl.fzymek.applister.activity.transitions;
 
-import android.animation.ObjectAnimator;
 import android.animation.TimeInterpolator;
 import android.content.Intent;
 import android.content.pm.ResolveInfo;
-import android.graphics.Color;
-import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewTreeObserver;
 import android.view.animation.AccelerateInterpolator;
 import android.view.animation.DecelerateInterpolator;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import java.util.concurrent.TimeUnit;
@@ -33,8 +32,9 @@ public class AppDetailsActivity extends AppCompatActivity {
     public static final String TOP = PACKAGE + ".top";
     public static final String INFO = PACKAGE + ".info";
 
-    private final static long ANIMATION_DURATION = TimeUnit.SECONDS.toMillis(1);
-
+    private final static long ANIMATION_DURATION = TimeUnit.MILLISECONDS.toMillis(500);
+    private final static TimeInterpolator decelerator = new DecelerateInterpolator();
+    private final static TimeInterpolator accelerator = new AccelerateInterpolator();
     @BindView(R.id.toolbar)
     Toolbar toolbar;
     @BindView(android.R.id.icon)
@@ -43,21 +43,18 @@ public class AppDetailsActivity extends AppCompatActivity {
     TextView text;
     @BindView(R.id.contentPanel)
     View content;
+    @BindView(R.id.title_container)
+    LinearLayout titleContainer;
     Unbinder unbinder;
-
     int orientation;
     private ResolveInfo info;
     private int thumbnailLeft, leftDelta;
     private int thumbnailTop, topDelta;
-    private TimeInterpolator decelerator = new DecelerateInterpolator();
-    private AccelerateInterpolator accelerator = new AccelerateInterpolator();
-    private ColorDrawable bg = new ColorDrawable(Color.WHITE);
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_installed_app_details);
+        setContentView(R.layout.activity_app_details);
         setSupportActionBar(toolbar);
         bindViews();
         readArgumentsFromBundle(getIntent());
@@ -77,7 +74,6 @@ public class AppDetailsActivity extends AppCompatActivity {
         Drawable drawable = info.loadIcon(getPackageManager());
         this.text.setText(text);
         this.icon.setImageDrawable(drawable);
-        this.content.setBackground(bg);
 
         if (savedInstanceState == null) {
             ViewTreeObserver observer = icon.getViewTreeObserver();
@@ -88,7 +84,6 @@ public class AppDetailsActivity extends AppCompatActivity {
                     int screenLocation[] = new int[2];
                     icon.getLocationOnScreen(screenLocation);
                     leftDelta = thumbnailLeft - screenLocation[0];
-                    topDelta = thumbnailTop - screenLocation[1];
 
                     runEnterAnimation();
 
@@ -99,33 +94,44 @@ public class AppDetailsActivity extends AppCompatActivity {
     }
 
     private void runEnterAnimation() {
-        icon.setPivotX(0);
-        icon.setPivotY(0);
-        icon.setTranslationX(leftDelta);
-        icon.setTranslationY(topDelta);
 
+        //prepare view for animation
+        titleContainer.setTranslationY(-titleContainer.getHeight());
+        icon.setTranslationX(-icon.getWidth());
         text.setAlpha(0);
 
-
-        icon.animate()
+        //animate title container
+        titleContainer.animate()
                 .setDuration(ANIMATION_DURATION)
-                .translationX(0)
                 .translationY(0)
                 .setInterpolator(decelerator)
                 .withEndAction(() -> {
-                    text.setTranslationY(-text.getHeight());
+                    //animate icon move
+                    icon.animate()
+                            .setDuration(ANIMATION_DURATION)
+                            .translationX(0)
+                            .setInterpolator(decelerator)
+                            .withEndAction(() -> {
+                                //animate text
+                                text.setTranslationY(-text.getHeight());
+                                text.animate()
+                                        .setDuration(ANIMATION_DURATION)
+                                        .translationY(0)
+                                        .alpha(1)
+                                        .setInterpolator(decelerator);
+                            });
 
-                    text.animate()
-                            .setDuration(ANIMATION_DURATION/2)
-                            .translationY(0)
-                            .alpha(1)
-                            .setInterpolator(accelerator);
                 });
+    }
 
-
-        ObjectAnimator backgroundAnim = ObjectAnimator.ofInt(bg, "alpha", 0, 255);
-        backgroundAnim.setDuration(ANIMATION_DURATION);
-        backgroundAnim.start();
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case android.R.id.home:
+                onBackPressed();
+                return true;
+        }
+        return super.onOptionsItemSelected(item);
     }
 
     @Override
@@ -140,50 +146,45 @@ public class AppDetailsActivity extends AppCompatActivity {
     }
 
     private void runExitAnimation(Runnable runnable) {
-        final boolean fadeOut;
-        if (getResources().getConfiguration().orientation != orientation) {
-            icon.setPivotX(icon.getWidth() / 2);
-            icon.setPivotY(icon.getHeight() / 2);
-            leftDelta = 0;
-            topDelta = 0;
-            fadeOut = true;
-        } else {
-            fadeOut = false;
-        }
+        //run enter animations in reverse
 
+        //fade & move text
         text.animate()
-            .alpha(0)
-                .translationY(-text.getHeight())
                 .setDuration(ANIMATION_DURATION)
+                .translationY(-text.getHeight())
+                .alpha(0)
                 .setInterpolator(accelerator)
                 .withEndAction(() -> {
+                    //move icon
                     icon.animate()
                             .setDuration(ANIMATION_DURATION)
-                            .translationX(leftDelta)
-                            .translationY(topDelta)
-                            .withEndAction(runnable);
+                            .translationX(-icon.getWidth())
+                            .setInterpolator(accelerator)
+                            .withEndAction(() -> {
+                                //hide container
+                                titleContainer.animate()
+                                        .setDuration(ANIMATION_DURATION)
+                                        .translationY(-titleContainer.getHeight())
+                                        .setInterpolator(accelerator)
+                                        .withEndAction(runnable);
+                            });
 
-                    if (fadeOut) {
-                        icon.animate().alpha(0);
-                    }
-
-                    // Fade out background
-                    ObjectAnimator bgAnim = ObjectAnimator.ofInt(bg, "alpha", 0);
-                    bgAnim.setDuration(ANIMATION_DURATION);
-                    bgAnim.start();
                 });
     }
 
     @Override
     public void finish() {
         super.finish();
-        overridePendingTransition(0,0);
+        overridePendingTransition(0, 0);
     }
 
     private void bindViews() {
         unbinder = ButterKnife.bind(this);
         setSupportActionBar(toolbar);
+        //noinspection ConstantConditions
         getSupportActionBar().setTitle(R.string.app_name);
+        getSupportActionBar().setHomeButtonEnabled(false);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
     }
 
 
