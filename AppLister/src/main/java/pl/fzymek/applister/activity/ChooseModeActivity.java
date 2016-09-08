@@ -1,6 +1,7 @@
 package pl.fzymek.applister.activity;
 
 import android.content.Intent;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
@@ -10,7 +11,8 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 import pl.fzymek.applister.R;
-import pl.fzymek.applister.activity.transitions.AppListActivity;
+import pl.fzymek.applister.activity.customtransitions.AppListActivity;
+import pl.fzymek.applister.activity.scenetransitions.WelcomeSceneTransitionsActivity;
 
 public class ChooseModeActivity extends AppCompatActivity {
 
@@ -23,18 +25,22 @@ public class ChooseModeActivity extends AppCompatActivity {
         setContentView(R.layout.activity_choose_mode);
         ButterKnife.bind(this);
         setSupportActionBar(toolbar);
+        //noinspection ConstantConditions
         getSupportActionBar().setTitle(R.string.app_name);
 
     }
 
     @OnClick(R.id.use_transitions_btn)
     void onUseTransitionsClick(View v) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            getWindow().setExitTransition(null);
+        }
         startActivity(new Intent(this, AppListActivity.class));
     }
 
 
     @OnClick(R.id.use_scene_transitions_btn)
     void onUseSceneTransitionsClick(View v) {
-        startActivity(new Intent(this, AppListActivity.class));
+        startActivity(new Intent(this, WelcomeSceneTransitionsActivity.class));
     }
 }
