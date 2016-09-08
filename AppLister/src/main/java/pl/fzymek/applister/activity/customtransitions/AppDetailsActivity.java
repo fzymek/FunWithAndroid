@@ -1,4 +1,4 @@
-package pl.fzymek.applister.activity.transitions;
+package pl.fzymek.applister.activity.customtransitions;
 
 import android.animation.TimeInterpolator;
 import android.content.Intent;

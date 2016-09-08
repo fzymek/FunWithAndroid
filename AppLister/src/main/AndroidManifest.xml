@@ -18,11 +18,15 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".activity.transitions.AppListActivity"
+            android:name=".activity.customtransitions.AppListActivity"
             android:parentActivityName=".activity.ChooseModeActivity" />
         <activity
-            android:name=".activity.transitions.AppDetailsActivity"
-            android:parentActivityName=".activity.transitions.AppListActivity" />
+            android:name=".activity.customtransitions.AppDetailsActivity"
+            android:parentActivityName=".activity.customtransitions.AppListActivity" />
+
+        <activity
+            android:name=".activity.scenetransitions.WelcomeSceneTransitionsActivity"
+            android:parentActivityName=".activity.ChooseModeActivity" />
 
     </application>
 
