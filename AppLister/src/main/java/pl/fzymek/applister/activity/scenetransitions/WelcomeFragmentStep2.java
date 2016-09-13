@@ -40,9 +40,7 @@ public class WelcomeFragmentStep2 extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setExitTransition(new Fade());
         setReenterTransition(new Fade());
-
     }
 
     @Override
