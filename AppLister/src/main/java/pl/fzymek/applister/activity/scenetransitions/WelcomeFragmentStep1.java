@@ -71,7 +71,9 @@ public class WelcomeFragmentStep1 extends Fragment {
     @OnClick(R.id.next)
     public void onClickBegin(View view) {
         WelcomeFragmentStep2 fragment = new WelcomeFragmentStep2();
-        fragment.setEnterTransition(new Fade());
+        Fade transition = new Fade();
+        transition.setStartDelay(300);
+        fragment.setEnterTransition(transition);
         fragment.setExitTransition(new Slide());
 
         ChangeBounds changeBounds = (ChangeBounds) TransitionInflater.from(getActivity()).inflateTransition(R.transition.next_transition);
