@@ -5,8 +5,6 @@ import android.annotation.TargetApi;
 import android.app.Fragment;
 import android.os.Build;
 import android.os.Bundle;
-import android.support.v4.view.ViewCompat;
-import android.transition.Fade;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -31,16 +29,9 @@ public class WelcomeFragmentStep2 extends Fragment {
     @BindView(R.id.next)
     Button next;
 
-    public WelcomeFragmentStep2() {
-        // Required empty public constructor
-    }
-
-
-    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setReenterTransition(new Fade());
     }
 
     @Override
@@ -49,8 +40,6 @@ public class WelcomeFragmentStep2 extends Fragment {
         // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.welcome_fragment_scene2, container, false);
         unbinder = ButterKnife.bind(this, view);
-        ViewCompat.setTransitionName(text, "text");
-        ViewCompat.setTransitionName(next, "next");
         return view;
     }
 

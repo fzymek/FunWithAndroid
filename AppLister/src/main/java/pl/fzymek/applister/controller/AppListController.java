@@ -11,7 +11,6 @@ import java.util.List;
 import pl.fzymek.applister.ui.AppListUI;
 import rx.Observable;
 import rx.Subscriber;
-import timber.log.Timber;
 
 /**
  * Created by filip on 29.08.2016.
@@ -20,7 +19,6 @@ public class AppListController {
 
     protected Activity activity;
     private AppListUI ui;
-    private final InstalledAppSubscriber subscriber = new InstalledAppSubscriber();
 
     public AppListController(Activity activity) {
         this.activity = activity;
@@ -33,7 +31,7 @@ public class AppListController {
     public void fetchData() {
         ui.onLoadingStarted();
         Observable<ResolveInfo> installedAppsObservable = createInstalledAppsObservable();
-        installedAppsObservable.subscribe(subscriber);
+        installedAppsObservable.subscribe(new InstalledAppSubscriber());
     }
 
     private Observable<ResolveInfo> createInstalledAppsObservable() {
@@ -42,7 +40,6 @@ public class AppListController {
         List<ResolveInfo> infos = activity.getPackageManager().queryIntentActivities(i, PackageManager.MATCH_DEFAULT_ONLY);
         PackageManager packageManager = activity.getPackageManager();
         Collections.sort(infos, (l, r) -> l.loadLabel(packageManager).toString().compareTo(r.loadLabel(packageManager).toString()));
-        Timber.d("Number of apps: %d", infos.size());
         return Observable.from(infos);
 
     }
@@ -50,19 +47,16 @@ public class AppListController {
     private class InstalledAppSubscriber extends Subscriber<ResolveInfo> {
         @Override
         public void onCompleted() {
-            Timber.d("onCompleted");
             ui.onLoadingFinished();
         }
 
         @Override
         public void onError(Throwable e) {
-            Timber.d("onError");
             ui.onError(e);
         }
 
         @Override
         public void onNext(ResolveInfo info) {
-            Timber.d("onNext");
             if (isUnsubscribed()) {
                 return;
             }

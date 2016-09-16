@@ -6,12 +6,6 @@ import android.app.Fragment;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.view.ViewCompat;
-import android.transition.ArcMotion;
-import android.transition.ChangeBounds;
-import android.transition.Fade;
-import android.transition.Slide;
-import android.transition.TransitionInflater;
-import android.transition.TransitionSet;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -35,16 +29,9 @@ public class WelcomeFragmentStep1 extends Fragment {
     Button next;
     Unbinder unbinder;
 
-    public WelcomeFragmentStep1() {
-        // Required empty public constructor
-    }
-
-    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setExitTransition(new Fade());
-        setReenterTransition(new Slide());
     }
 
     @Override
@@ -71,19 +58,6 @@ public class WelcomeFragmentStep1 extends Fragment {
     @OnClick(R.id.next)
     public void onClickBegin(View view) {
         WelcomeFragmentStep2 fragment = new WelcomeFragmentStep2();
-        Fade transition = new Fade();
-        transition.setStartDelay(300);
-        fragment.setEnterTransition(transition);
-        fragment.setExitTransition(new Slide());
-
-        ChangeBounds changeBounds = (ChangeBounds) TransitionInflater.from(getActivity()).inflateTransition(R.transition.next_transition);
-        changeBounds.setPathMotion(new ArcMotion());
-
-        TransitionSet set = new TransitionSet();
-        set.addTransition(changeBounds);
-        set.addTransition(new Fade());
-        fragment.setSharedElementEnterTransition(set);
-
         getActivity().getFragmentManager().beginTransaction()
                 .replace(R.id.root, fragment)
                 .addSharedElement(next, "next") //add shared elements for transaction

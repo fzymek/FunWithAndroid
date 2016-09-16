@@ -48,7 +48,6 @@ public class AppDetailsActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_app_details);
-        setSupportActionBar(toolbar);
         bindViews();
         readArgumentsFromBundle(getIntent());
         setUpFromBundle(savedInstanceState);

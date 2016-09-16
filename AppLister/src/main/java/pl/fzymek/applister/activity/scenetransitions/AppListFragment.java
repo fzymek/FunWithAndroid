@@ -1,17 +1,14 @@
 package pl.fzymek.applister.activity.scenetransitions;
 
-import android.annotation.TargetApi;
 import android.app.Fragment;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
-import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
-import android.transition.Explode;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -23,6 +20,7 @@ import pl.fzymek.applister.R;
 import pl.fzymek.applister.activity.AppListAdapter;
 import pl.fzymek.applister.controller.AppListController;
 import pl.fzymek.applister.ui.AppListUI;
+import timber.log.Timber;
 
 /**
  * Created by filip on 13.09.2016.
@@ -40,11 +38,9 @@ public class AppListFragment extends Fragment implements AppListUI {
     LinearLayoutManager layoutManager;
     AppListAdapter adapter;
 
-    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setEnterTransition(new Explode());
         controller = new AppListController(getActivity());
         controller.setUi(this);
     }
@@ -54,6 +50,7 @@ public class AppListFragment extends Fragment implements AppListUI {
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.activity_main, container, false);
         unbinder = ButterKnife.bind(this, view);
+        Timber.d("onCreateView");
         return view;
     }
 
@@ -61,11 +58,13 @@ public class AppListFragment extends Fragment implements AppListUI {
     public void onDestroyView() {
         super.onDestroyView();
         unbinder.unbind();
+        Timber.d("onDestroyView");
     }
 
     @Override
     public void onViewCreated(View rootView, Bundle savedInstanceState) {
         super.onViewCreated(rootView, savedInstanceState);
+        Timber.d("onViewCreated");
 
         getAppCompatActivity().setSupportActionBar(toolbar);
         getAppCompatActivity().getSupportActionBar().setTitle(R.string.app_name);
@@ -76,33 +75,51 @@ public class AppListFragment extends Fragment implements AppListUI {
         PackageManager packageManager = getActivity().getPackageManager();
         adapter = new AppListAdapter(packageManager);
         adapter.setOnItemClickListener((view, info) -> {
-
-
+            AppDetailsFragment fragment = new AppDetailsFragment();
+            Bundle args = new Bundle();
+            args.putParcelable(AppDetailsFragment.INFO, info);
+            fragment.setArguments(args);
+            getAppCompatActivity().getFragmentManager().beginTransaction()
+                    .replace(R.id.root, fragment)
+                    .addToBackStack(null)
+                    .commit();
         });
 
         recyclerView.setLayoutManager(layoutManager);
         recyclerView.setAdapter(adapter);
+    }
 
+    @Override
+    public void onResume() {
+        super.onResume();
+        Timber.d("onResume");
         controller.fetchData();
     }
 
     @Override
-    public void onLoadingStarted() {
+    public void onPause() {
+        super.onPause();
+        Timber.d("onPause");
+    }
 
+    @Override
+    public void onLoadingStarted() {
+        Timber.d("onLoadingStarted");
     }
 
     @Override
     public void onLoadingFinished() {
-
+        Timber.d("onLoadingFinished");
     }
 
     @Override
     public void onError(Throwable error) {
-
+        Timber.e(error);
     }
 
     @Override
     public void onNextApp(ResolveInfo info) {
+        Timber.d("onNextApp: %s", info);
         adapter.add(info);
     }
 
