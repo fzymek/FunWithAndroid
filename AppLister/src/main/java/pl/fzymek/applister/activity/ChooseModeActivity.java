@@ -1,7 +1,6 @@
 package pl.fzymek.applister.activity;
 
 import android.content.Intent;
-import android.os.Build;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
@@ -32,9 +31,6 @@ public class ChooseModeActivity extends AppCompatActivity {
 
     @OnClick(R.id.use_transitions_btn)
     void onUseTransitionsClick(View v) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            getWindow().setExitTransition(null);
-        }
         startActivity(new Intent(this, AppListActivity.class));
     }
 
