@@ -1,6 +1,7 @@
 package pl.fzymek.applister.activity.scenetransitions;
 
 import android.animation.Animator;
+import android.animation.AnimatorListenerAdapter;
 import android.annotation.TargetApi;
 import android.app.Fragment;
 import android.content.pm.PackageManager;
@@ -8,10 +9,13 @@ import android.content.pm.ResolveInfo;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.v4.view.ViewCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
+import android.transition.Transition;
+import android.transition.TransitionInflater;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewAnimationUtils;
@@ -29,7 +33,7 @@ import timber.log.Timber;
 /**
  * Created by filip on 13.09.2016.
  */
-public class AppListFragment extends Fragment implements AppListUI {
+public class AppListFragment extends Fragment implements AppListUI, BackListener {
 
     AppListController controller;
     Unbinder unbinder;
@@ -41,6 +45,7 @@ public class AppListFragment extends Fragment implements AppListUI {
 
     LinearLayoutManager layoutManager;
     AppListAdapter adapter;
+    int cx, cy;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -65,23 +70,27 @@ public class AppListFragment extends Fragment implements AppListUI {
 
     private void createCircularReveal(View view) {
         //noinspection ConstantConditions
-        view.addOnLayoutChangeListener(new View.OnLayoutChangeListener() {
-            @TargetApi(Build.VERSION_CODES.LOLLIPOP)
-            @Override
-            public void onLayoutChange(View v, int left, int top, int right, int bottom, int oldLeft, int oldTop, int oldRight, int oldBottom) {
-                //noinspection ConstantConditions
-                v.removeOnLayoutChangeListener(this);
+        if (getArguments().containsKey("cX") && getArguments().containsKey("cY")) {
+            view.addOnLayoutChangeListener(new View.OnLayoutChangeListener() {
+                @TargetApi(Build.VERSION_CODES.LOLLIPOP)
+                @Override
+                public void onLayoutChange(View v, int left, int top, int right, int bottom, int oldLeft, int oldTop, int oldRight, int oldBottom) {
+                    //noinspection ConstantConditions
+                    v.removeOnLayoutChangeListener(this);
 
-                int cx = getArguments().getInt("cX");
-                int cy = getArguments().getInt("cY");
-                float radius = (float) Math.hypot(getView().getWidth(), getView().getHeight());
+                    cx = getArguments().getInt("cX");
+                    cy = getArguments().getInt("cY");
+                    getArguments().remove("cX");
+                    getArguments().remove("cY");
+                    float radius = (float) Math.hypot(getView().getWidth(), getView().getHeight());
 
-                Animator circularReveal = ViewAnimationUtils.createCircularReveal(getView(), cx, cy, 0, radius);
-                circularReveal.setDuration(600);
-                circularReveal.start();
+                    Animator circularReveal = ViewAnimationUtils.createCircularReveal(getView(), cx, cy, 0, radius);
+                    circularReveal.setDuration(600);
+                    circularReveal.start();
 
-            }
-        });
+                }
+            });
+        }
     }
 
     @Override
@@ -91,6 +100,7 @@ public class AppListFragment extends Fragment implements AppListUI {
         Timber.d("onDestroyView");
     }
 
+    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
     @Override
     public void onViewCreated(View rootView, Bundle savedInstanceState) {
         super.onViewCreated(rootView, savedInstanceState);
@@ -109,8 +119,21 @@ public class AppListFragment extends Fragment implements AppListUI {
             Bundle args = new Bundle();
             args.putParcelable(AppDetailsFragment.INFO, info);
             fragment.setArguments(args);
+
+
+            View icon = view.findViewById(android.R.id.icon);
+            View text = view.findViewById(android.R.id.text1);
+            ViewCompat.setTransitionName(icon, "icon");
+            ViewCompat.setTransitionName(text, "text");
+
+            Transition transition = TransitionInflater.from(view.getContext()).inflateTransition(R.transition.open_details_shared_fragment);
+            fragment.setSharedElementEnterTransition(transition);
+            fragment.setSharedElementReturnTransition(transition);
+
             getAppCompatActivity().getFragmentManager().beginTransaction()
                     .replace(R.id.root, fragment)
+                    .addSharedElement(icon, "icon")
+                    .addSharedElement(text, "text")
                     .addToBackStack(null)
                     .commit();
         });
@@ -155,5 +178,26 @@ public class AppListFragment extends Fragment implements AppListUI {
 
     private AppCompatActivity getAppCompatActivity() {
         return (AppCompatActivity) getActivity();
+    }
+
+    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
+    @Override
+    public void onBackPressed(Runnable action) {
+        if (cx != 0 && cy != 0) {
+            float radius = (float) Math.hypot(getView().getWidth(), getView().getHeight());
+
+            Animator circularReveal = ViewAnimationUtils.createCircularReveal(getView(), cx, cy, radius, 0);
+            circularReveal.setDuration(600);
+            circularReveal.addListener(new AnimatorListenerAdapter() {
+                @Override
+                public void onAnimationEnd(Animator animation) {
+                    getView().setVisibility(View.GONE);
+                    getView().post(action);
+                }
+            });
+            circularReveal.start();
+        } else {
+            getView().post(action);
+        }
     }
 }

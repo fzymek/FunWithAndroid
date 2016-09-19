@@ -32,9 +32,24 @@ public class WelcomeSceneTransitionsActivity extends AppCompatActivity {
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case android.R.id.home:
-                getFragmentManager().popBackStack();
+                handleBackPress();
                 return true;
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    private void handleBackPress() {
+        Fragment fragment = getFragmentManager().findFragmentById(R.id.root);
+        if (fragment != null && fragment instanceof BackListener) {
+            ((BackListener) fragment).onBackPressed(() -> getFragmentManager().popBackStack());
+        } else {
+            getFragmentManager().popBackStack();
+            super.onBackPressed();
+        }
+    }
+
+    @Override
+    public void onBackPressed() {
+        handleBackPress();
     }
 }
