@@ -3,11 +3,11 @@
 
     <declare-styleable name="LottoBoard">
         <attr name="border_size" format="dimension|reference" />
-        <attr name="border_color" format="dimension|reference" />
+        <attr name="border_color" format="color|reference" />
         <attr name="divider_size" format="dimension|reference" />
-        <attr name="divider_color" format="dimension|reference" />
-        <attr name="background_color" format="dimension|reference" />
-        <attr name="text_color" format="dimension|reference" />
+        <attr name="divider_color" format="color|reference" />
+        <attr name="background_color" format="color|reference" />
+        <attr name="text_color" format="color|reference" />
     </declare-styleable>
 
 </resources>
