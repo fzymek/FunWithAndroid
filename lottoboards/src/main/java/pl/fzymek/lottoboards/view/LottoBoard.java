@@ -11,6 +11,7 @@ import android.util.AttributeSet;
 import android.view.View;
 
 import pl.fzymek.lottoboards.R;
+import timber.log.Timber;
 
 /**
  * Created by filip on 19.09.2016.
@@ -67,5 +68,28 @@ public class LottoBoard extends View {
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
         canvas.drawRect(0, 0, getWidth(), getHeight(), borderPaint);
+    }
+
+    @Override
+    protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
+        Timber.d("width spec: %s", getSpec(widthMeasureSpec));
+        Timber.d("height spec: %s", getSpec(heightMeasureSpec));
+        Timber.d("width size: %d", MeasureSpec.getSize(widthMeasureSpec));
+        Timber.d("height size: %d", MeasureSpec.getSize(heightMeasureSpec));
+        super.onMeasure(widthMeasureSpec, heightMeasureSpec);
+    }
+
+
+    private String getSpec(int sizeSpec) {
+        int mode = MeasureSpec.getMode(sizeSpec);
+        if (mode == MeasureSpec.AT_MOST) {
+            return "AT_MOST";
+        } else if (mode == MeasureSpec.EXACTLY) {
+            return "EXACTLY";
+        } else if (mode == MeasureSpec.UNSPECIFIED) {
+            return "UNSPECIFIED";
+        } else {
+            return "Unknown";
+        }
     }
 }
