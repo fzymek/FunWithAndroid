@@ -1,5 +1,6 @@
 package pl.fzymek.lottoboards.view;
 
+import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
 import android.content.Context;
 import android.content.res.TypedArray;
@@ -8,22 +9,32 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.os.Build;
 import android.util.AttributeSet;
+import android.util.DisplayMetrics;
+import android.util.TypedValue;
 import android.view.View;
 
 import pl.fzymek.lottoboards.R;
 import timber.log.Timber;
 
-/**
- * Created by filip on 19.09.2016.
- */
 public class LottoBoard extends View {
 
-    private final static int DEFAULT_BORDER_SIZE_PX = 8;
+    private final static int DEFAULT_BORDER_SIZE_DIP = 4;
+    private final static int DEFAULT_DIVIDER_SIZE_DIP = 2;
     private final static int DEFAULT_BORDER_COLOR = Color.RED;
+    private final static int DEFAULT_BACKGROUND_COLOR = Color.parseColor("#FFC77F");
+    private final static int DEFAULT_FIELD_COUNT = 2;
 
     Paint borderPaint;
     int borderColor;
     int borderSize;
+
+    Paint backgroundPaint;
+    int backgroundColor;
+
+    int horizontalFieldCount;
+    int verticalFieldCount;
+
+    int minDividerSize;
 
     public LottoBoard(Context context) {
         super(context);
@@ -51,11 +62,23 @@ public class LottoBoard extends View {
         TypedArray attributes = context.getTheme().obtainStyledAttributes(attributeSet, R.styleable.LottoBoard, 0, 0);
 
         try {
-            borderSize = attributes.getDimensionPixelSize(R.styleable.LottoBoard_border_size, DEFAULT_BORDER_SIZE_PX);
+            DisplayMetrics metrics = context.getResources().getDisplayMetrics();
+            borderSize = attributes.getDimensionPixelSize(R.styleable.LottoBoard_border_size,
+                    (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, DEFAULT_BORDER_SIZE_DIP, metrics));
+            minDividerSize = attributes.getDimensionPixelSize(R.styleable.LottoBoard_min_divider_size,
+                    (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, DEFAULT_DIVIDER_SIZE_DIP, metrics));
+
+            backgroundColor = attributes.getColor(R.styleable.LottoBoard_background_color, DEFAULT_BACKGROUND_COLOR);
             borderColor = attributes.getColor(R.styleable.LottoBoard_border_color, DEFAULT_BORDER_COLOR);
+
+            horizontalFieldCount = attributes.getInteger(R.styleable.LottoBoard_horizontal_field_count, DEFAULT_FIELD_COUNT);
+            verticalFieldCount = attributes.getInteger(R.styleable.LottoBoard_vertical_field_count, DEFAULT_FIELD_COUNT);
         } finally {
             attributes.recycle();
         }
+
+        backgroundPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        backgroundPaint.setColor(backgroundColor);
 
         borderPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         borderPaint.setStyle(Paint.Style.STROKE);
@@ -65,31 +88,42 @@ public class LottoBoard extends View {
     }
 
     @Override
-    protected void onDraw(Canvas canvas) {
-        super.onDraw(canvas);
-        canvas.drawRect(0, 0, getWidth(), getHeight(), borderPaint);
+    protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
+        calculateBoardSize(widthMeasureSpec, heightMeasureSpec);
+
     }
 
     @Override
-    protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
-        Timber.d("width spec: %s", getSpec(widthMeasureSpec));
-        Timber.d("height spec: %s", getSpec(heightMeasureSpec));
-        Timber.d("width size: %d", MeasureSpec.getSize(widthMeasureSpec));
-        Timber.d("height size: %d", MeasureSpec.getSize(heightMeasureSpec));
-        super.onMeasure(widthMeasureSpec, heightMeasureSpec);
+    protected void onDraw(Canvas canvas) {
+        super.onDraw(canvas);
+        drawBackground(canvas);
+        drawBorder(canvas);
     }
 
+    private void drawBackground(Canvas canvas) {
+        canvas.drawRect(0, 0, getWidth(), getHeight(), backgroundPaint);
+    }
 
-    private String getSpec(int sizeSpec) {
-        int mode = MeasureSpec.getMode(sizeSpec);
-        if (mode == MeasureSpec.AT_MOST) {
-            return "AT_MOST";
-        } else if (mode == MeasureSpec.EXACTLY) {
-            return "EXACTLY";
-        } else if (mode == MeasureSpec.UNSPECIFIED) {
-            return "UNSPECIFIED";
-        } else {
-            return "Unknown";
-        }
+    private void drawBorder(Canvas canvas) {
+        canvas.drawRect(0,0, getWidth(), getHeight(), borderPaint);
+    }
+
+    /**
+     * Returns point containing calculated view sizes
+     * @return
+     */
+    @SuppressLint("TimberArgCount")
+    void calculateBoardSize(int widthMeasureSpec, int heightMeasureSpec) {
+
+        int minW = getPaddingLeft() + getPaddingRight() + getSuggestedMinimumWidth();
+        int w = resolveSize(minW, widthMeasureSpec);
+
+        int minH = getPaddingTop() + getPaddingBottom() + getSuggestedMinimumHeight();
+        int h = resolveSize(minH, heightMeasureSpec);
+
+        int size = Math.max(w,h);
+
+        Timber.d("setMeasuredDimension(%d, %1$d)", size);
+        setMeasuredDimension(size, size);
     }
 }

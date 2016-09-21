@@ -2,12 +2,13 @@
 <resources>
 
     <declare-styleable name="LottoBoard">
+        <attr name="background_color" format="color|reference" />
         <attr name="border_size" format="dimension|reference" />
         <attr name="border_color" format="color|reference" />
         <attr name="divider_size" format="dimension|reference" />
-        <attr name="divider_color" format="color|reference" />
-        <attr name="background_color" format="color|reference" />
-        <attr name="text_color" format="color|reference" />
+        <attr name="horizontal_field_count" format="integer|reference" />
+        <attr name="vertical_field_count" format="integer|reference" />
+        <attr name="min_divider_size" format="dimension|reference" />
     </declare-styleable>
 
 </resources>
