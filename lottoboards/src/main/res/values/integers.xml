@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <integer name="field_count_h_1">3</integer>
+    <integer name="field_count_w_1">3</integer>
+
+
+    <integer name="field_count_h_2">2</integer>
+    <integer name="field_count_w_2">5</integer>
+
+
+    <integer name="field_count_h_3">5</integer>
+    <integer name="field_count_w_3">2</integer>
+
+
+    <integer name="field_count_h_4">7</integer>
+    <integer name="field_count_w_4">7</integer>
+</resources>

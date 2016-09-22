@@ -8,7 +8,8 @@
         <attr name="divider_size" format="dimension|reference" />
         <attr name="horizontal_field_count" format="integer|reference" />
         <attr name="vertical_field_count" format="integer|reference" />
-        <attr name="min_divider_size" format="dimension|reference" />
+        <attr name="text_color" format="color|reference"/>
+        <attr name="text_size" format="dimension|reference"/>
     </declare-styleable>
 
 </resources>

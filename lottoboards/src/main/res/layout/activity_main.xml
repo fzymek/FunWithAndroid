@@ -17,8 +17,13 @@
         android:layout_height="wrap_content">
 
         <pl.fzymek.lottoboards.view.LottoBoard
+            app:horizontal_field_count="2"
+            app:vertical_field_count="2"
             android:layout_width="0dp"
             android:layout_height="match_parent"
+            app:text_color="@android:color/holo_orange_dark"
+            app:text_size="42dp"
+            app:border_size="8dp"
             android:layout_weight="1" />
 
         <Space
@@ -29,9 +34,12 @@
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="1"
+            app:horizontal_field_count="@integer/field_count_h_2"
+            app:vertical_field_count="@integer/field_count_w_2"
             app:border_color="@color/colorAccent"
             app:background_color="#FFFF00"
-            app:border_size="4dp" />
+            app:border_size="2dp"
+            app:divider_size="5dp" />
 
     </LinearLayout>
 
@@ -47,6 +55,8 @@
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="1"
+            app:horizontal_field_count="@integer/field_count_h_3"
+            app:vertical_field_count="@integer/field_count_w_3"
             app:border_color="@color/colorPrimary"
             app:background_color="@android:color/holo_blue_dark"
             app:border_size="4dp"/>
@@ -59,6 +69,8 @@
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="1"
+            app:horizontal_field_count="@integer/field_count_h_4"
+            app:vertical_field_count="@integer/field_count_w_4"
             app:border_color="@color/colorPrimaryDark"
             app:border_size="@dimen/lotto_board_border_size"/>
 

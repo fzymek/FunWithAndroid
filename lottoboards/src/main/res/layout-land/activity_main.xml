@@ -22,6 +22,8 @@
             android:layout_height="wrap_content">
 
             <pl.fzymek.lottoboards.view.LottoBoard
+                app:horizontal_field_count="@integer/field_count_h_1"
+                app:vertical_field_count="@integer/field_count_w_1"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="1" />
@@ -33,6 +35,8 @@
             <pl.fzymek.lottoboards.view.LottoBoard
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
+                app:horizontal_field_count="@integer/field_count_h_2"
+                app:vertical_field_count="@integer/field_count_w_2"
                 android:layout_weight="1"
                 app:background_color="#FFFF00"
                 app:border_color="@color/colorAccent"
@@ -49,6 +53,8 @@
             android:layout_height="wrap_content">
 
             <pl.fzymek.lottoboards.view.LottoBoard
+                app:horizontal_field_count="@integer/field_count_h_3"
+                app:vertical_field_count="@integer/field_count_w_3"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
@@ -61,6 +67,8 @@
                 android:layout_height="match_parent" />
 
             <pl.fzymek.lottoboards.view.LottoBoard
+                app:horizontal_field_count="@integer/field_count_h_4"
+                app:vertical_field_count="@integer/field_count_w_4"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
