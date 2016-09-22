@@ -27,12 +27,15 @@ public class LottoBoard extends View {
     private final static int DEFAULT_FIELD_COUNT = 2;
     private final static int DEFAULT_TEXT_COLOR = Color.BLACK;
     private final static int DEFAULT_TEXT_SIZE_SP = 14;
+
     int borderSize;
 
     Paint backgroundPaint;
     int backgroundColor;
 
     int dividerSize;
+    int dividerXPadding = 0;
+    int dividerYPadding = 0;
 
     int horizontalFieldCount;
     int verticalFieldCount;
@@ -40,13 +43,10 @@ public class LottoBoard extends View {
     Paint fieldPaint;
     int fieldWidth;
     int fieldHeight;
-    int dividerXPadding = 0;
-    int dividerYPadding = 0;
 
     TextPaint textPaint;
     int textColor;
     int textSize;
-
 
     public LottoBoard(Context context) {
         super(context);
@@ -115,6 +115,14 @@ public class LottoBoard extends View {
         calculatePaddings();
     }
 
+    @Override
+    protected void onDraw(Canvas canvas) {
+        super.onDraw(canvas);
+        drawBackground(canvas);
+        drawFields(canvas);
+        drawFieldLabels(canvas);
+    }
+
     void calculateBoardSize(int widthMeasureSpec, int heightMeasureSpec) {
 
         int minW = getPaddingLeft() + getPaddingRight() + getSuggestedMinimumWidth();
@@ -128,7 +136,6 @@ public class LottoBoard extends View {
         Timber.d("setMeasuredDimension(%d, %1$d)", size);
         setMeasuredDimension(size, size);
     }
-
 
     private void calculateFieldSize() {
         int availableSpaceX = getAvailableSpace(getMeasuredWidth(), borderSize, dividerSize);
@@ -164,14 +171,6 @@ public class LottoBoard extends View {
         return (availableSpace - (fieldCount - 1) * dividerSize) / fieldCount;
     }
 
-    @Override
-    protected void onDraw(Canvas canvas) {
-        super.onDraw(canvas);
-        drawBackground(canvas);
-        drawFields(canvas);
-        drawFieldLabels(canvas);
-    }
-
     private void drawBackground(Canvas canvas) {
         canvas.drawRect(0, 0, getWidth(), getHeight(), backgroundPaint);
     }
@@ -193,7 +192,7 @@ public class LottoBoard extends View {
         int count = 0;
         for (int i = 0; i < verticalFieldCount; i++) {
             int rectY = borderSize + dividerYPadding + i * fieldHeight + i * (dividerSize + dividerYPadding);
-            int textY = rectY + fieldHeight / 2 - (int)((textPaint.descent() + textPaint.ascent())/2);
+            int textY = rectY + fieldHeight / 2 - (int) ((textPaint.descent() + textPaint.ascent()) / 2);
 
             for (int j = 0; j < horizontalFieldCount; j++) {
                 int rectX = borderSize + dividerXPadding + j * fieldWidth + j * (dividerSize + dividerXPadding);
