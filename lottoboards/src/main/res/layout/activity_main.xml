@@ -22,8 +22,10 @@
             android:layout_width="0dp"
             android:layout_height="match_parent"
             app:text_color="@android:color/holo_orange_dark"
+            app:corner_radius="10dp"
             app:text_size="42dp"
             app:border_size="8dp"
+            app:corner_type="sharp"
             android:layout_weight="1" />
 
         <Space
@@ -31,13 +33,16 @@
             android:layout_height="match_parent" />
 
         <pl.fzymek.lottoboards.view.LottoBoard
+
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="1"
             app:horizontal_field_count="@integer/field_count_h_2"
             app:vertical_field_count="@integer/field_count_w_2"
             app:border_color="@color/colorAccent"
-            app:background_color="#FFFF00"
+            app:background_color="#aaaaaa"
+            app:corner_type="round"
+            app:corner_radius="5dp"
             app:border_size="2dp"
             app:divider_size="5dp" />
 
@@ -71,6 +76,8 @@
             android:layout_weight="1"
             app:horizontal_field_count="@integer/field_count_h_4"
             app:vertical_field_count="@integer/field_count_w_4"
+            app:corner_type="round"
+            app:corner_radius="@dimen/corner_radius_3"
             app:border_color="@color/colorPrimaryDark"
             app:border_size="@dimen/lotto_board_border_size"/>
 

@@ -10,6 +10,11 @@
         <attr name="vertical_field_count" format="integer|reference" />
         <attr name="text_color" format="color|reference"/>
         <attr name="text_size" format="dimension|reference"/>
+        <attr name="corner_radius" format="dimension|reference"/>
+        <attr name="corner_type" format="enum">
+            <enum name="sharp" value="0" />
+            <enum name="round" value="1" />
+        </attr>
     </declare-styleable>
 
 </resources>
