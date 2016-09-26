@@ -4,26 +4,49 @@ import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
 import android.content.Context;
 import android.content.res.TypedArray;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.graphics.Point;
+import android.graphics.PointF;
+import android.graphics.Rect;
 import android.graphics.RectF;
 import android.os.Build;
+import android.os.Parcel;
+import android.os.Parcelable;
+import android.support.annotation.DrawableRes;
 import android.text.TextPaint;
 import android.util.AttributeSet;
 import android.util.DisplayMetrics;
+import android.util.SparseBooleanArray;
 import android.util.TypedValue;
+import android.view.GestureDetector;
+import android.view.MotionEvent;
 import android.view.View;
 
 import pl.fzymek.lottoboards.R;
+import timber.log.Timber;
 
 @SuppressLint({"BinaryOperationInTimber", "TimberArgCount"})
-public class LottoBoard extends View {
+public class LottoBoard extends View implements View.OnTouchListener {
+
+    class TapListener extends GestureDetector.SimpleOnGestureListener {
+        @Override
+        public boolean onSingleTapUp(MotionEvent e) {
+            Timber.d("event: %s", e);
+            toggleCheckMarkOnField(new PointF(e.getX(), e.getY()));
+            return true;
+        }
+    }
 
     public static final int BORDER_COUNT = 2;
     private final static int DEFAULT_BORDER_SIZE_DIP = 4;
     private final static int DEFAULT_DIVIDER_SIZE_DIP = 4;
     private final static int DEFAULT_BACKGROUND_COLOR = Color.parseColor("#FFC77F");
+    private final static int DEFAULT_HIGHLIGHT_BACKGROUND_COLOR = Color.parseColor("#AAAAAA");
+    private final static int DEFAULT_MAX_SELECTIONS = 1;
     private final static int DEFAULT_FIELD_COUNT = 2;
     private final static int DEFAULT_CORNER_RADIUS_DIP = 3;
     private final static int DEFAULT_TEXT_COLOR = Color.BLACK;
@@ -35,6 +58,7 @@ public class LottoBoard extends View {
 
     Paint backgroundPaint;
     int backgroundColor;
+    int highlightBackgroundColor;
 
     int dividerSize;
     int dividerXPadding = 0;
@@ -54,6 +78,18 @@ public class LottoBoard extends View {
     TextPaint textPaint;
     int textColor;
     int textSize;
+
+    int maxSelections;
+
+    @DrawableRes
+    int checkMarkDrawableRes;
+    Bitmap checkMarkBitmap;
+    Rect checkMarkRect;
+    Rect srcRect;
+
+    SparseBooleanArray markedFields;
+
+    GestureDetector tapDetector;
 
     public LottoBoard(Context context) {
         super(context);
@@ -92,6 +128,7 @@ public class LottoBoard extends View {
                     (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, DEFAULT_CORNER_RADIUS_DIP, metrics));
 
             backgroundColor = attributes.getColor(R.styleable.LottoBoard_background_color, DEFAULT_BACKGROUND_COLOR);
+            highlightBackgroundColor = attributes.getColor(R.styleable.LottoBoard_highlight_background_color, DEFAULT_HIGHLIGHT_BACKGROUND_COLOR);
 
             horizontalFieldCount = attributes.getInteger(R.styleable.LottoBoard_horizontal_field_count, DEFAULT_FIELD_COUNT);
             verticalFieldCount = attributes.getInteger(R.styleable.LottoBoard_vertical_field_count, DEFAULT_FIELD_COUNT);
@@ -101,6 +138,10 @@ public class LottoBoard extends View {
                     (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_SP, DEFAULT_TEXT_SIZE_SP, metrics));
 
             cornerType = attributes.getInt(R.styleable.LottoBoard_corner_type, CORNER_TYPE_SHARP);
+
+            checkMarkDrawableRes = attributes.getResourceId(R.styleable.LottoBoard_checkmark_drawable, R.drawable.ic_check_mark);
+
+            maxSelections = attributes.getInteger(R.styleable.LottoBoard_max_selections, DEFAULT_MAX_SELECTIONS);
         } finally {
             attributes.recycle();
         }
@@ -119,6 +160,22 @@ public class LottoBoard extends View {
         textPaint.setStrokeCap(Paint.Cap.ROUND);
         textPaint.setStrokeJoin(Paint.Join.BEVEL);
         textPaint.setColor(textColor);
+
+        markedFields = new SparseBooleanArray();
+
+        if (isInEditMode()) {
+            markedFields.put(1, true);
+        }
+
+        checkMarkRect = new Rect();
+        checkMarkBitmap = BitmapFactory.decodeResource(context.getResources(), checkMarkDrawableRes);
+        srcRect = new Rect(0, 0, checkMarkBitmap.getWidth(), checkMarkBitmap.getHeight());
+
+        setOnTouchListener(this);
+
+        tapDetector = new GestureDetector(context, new TapListener());
+
+        setSaveEnabled(true);
     }
 
     @Override
@@ -134,6 +191,7 @@ public class LottoBoard extends View {
         drawBackground(canvas);
         drawFields(canvas);
         drawFieldLabels(canvas);
+        drawSelectionMarkers(canvas);
     }
 
     void calculateBoardSize(int widthMeasureSpec, int heightMeasureSpec) {
@@ -184,6 +242,11 @@ public class LottoBoard extends View {
     }
 
     void drawBackground(Canvas canvas) {
+        if (markedFields.size() < maxSelections) {
+            backgroundPaint.setColor(backgroundColor);
+        } else {
+            backgroundPaint.setColor(highlightBackgroundColor);
+        }
         canvas.drawRect(0, 0, getWidth(), getHeight(), backgroundPaint);
     }
 
@@ -228,6 +291,143 @@ public class LottoBoard extends View {
 
             }
         }
+    }
+
+    //TODO: optimize check mark drawing -> put canvas.drawBitmap() inside drawField() for loop
+    void drawSelectionMarkers(Canvas canvas) {
+        if (markedFields.size() == 0) {
+            return;
+        }
+
+        int fieldNo = 0;
+        for (int i = 0; i < verticalFieldCount; i++) {
+            for (int j = 0; j < horizontalFieldCount; j++) {
+                ++fieldNo;
+                if (markedFields.get(fieldNo)) {
+                    //draw marker
+
+                    int y = borderSize + dividerYPadding + i * fieldHeight + i * (dividerSize + dividerYPadding);
+                    int x = borderSize + dividerXPadding + j * fieldWidth + j * (dividerSize + dividerXPadding);
+
+                    checkMarkRect.left = x;
+                    checkMarkRect.top = y;
+                    checkMarkRect.right = x + fieldWidth;
+                    checkMarkRect.bottom = y + fieldHeight;
+
+                    canvas.drawBitmap(checkMarkBitmap, srcRect, checkMarkRect, null);
+                }
+            }
+        }
+    }
+
+    @Override
+    public boolean onTouch(View view, MotionEvent motionEvent) {
+        tapDetector.onTouchEvent(motionEvent);
+        return true;
+    }
+
+    void toggleCheckMarkOnField(PointF pointF) {
+        int fieldIndex = calculateFieldIndexFromTap(pointF);
+        if (fieldIndex < 0) {
+            return;
+        }
+        if (markedFields.get(fieldIndex)) {
+            Timber.d("unmark %d", fieldIndex);
+            markedFields.delete(fieldIndex);
+        } else {
+            if (markedFields.size() < maxSelections) {
+                Timber.d("mark %d", fieldIndex);
+                markedFields.put(fieldIndex, true);
+            }
+        }
+        invalidate();
+    }
+
+    private int calculateFieldIndexFromTap(PointF tapPoint) {
+        Timber.d("point: %s", tapPoint);
+        int fieldNo=0;
+        for (int i = 0; i < verticalFieldCount; i++) {
+            int y = borderSize + dividerYPadding + i * fieldHeight + i * (dividerSize + dividerYPadding);
+            for (int j = 0; j < horizontalFieldCount; j++) {
+                ++fieldNo;
+                int x = borderSize + dividerXPadding + j * fieldWidth + j * (dividerSize + dividerXPadding);
+                RectF field = new RectF(x,y, x+fieldWidth, y+fieldHeight);
+                Timber.d("rect: %s", field);
+                if (field.contains(tapPoint.x, tapPoint.y)) {
+                    Timber.d("point is in rect!");
+                    return fieldNo;
+                }
+            }
+        }
+        return -1;
+    }
+
+    @Override
+    protected Parcelable onSaveInstanceState() {
+        return new SavedState(super.onSaveInstanceState(), getCheckedFieldIds());
+    }
+
+    @Override
+    protected void onRestoreInstanceState(Parcelable state) {
+        if (!(state instanceof SavedState)) {
+            super.onRestoreInstanceState(state);
+            return;
+        }
+
+        SavedState savedState = (SavedState) state;
+        super.onRestoreInstanceState(savedState.getSuperState());
+        int selections[] = savedState.markedFields;
+        for (int selection : selections) {
+            markedFields.put(selection, true);
+        }
+    }
+
+    private int[] getCheckedFieldIds() {
+        if (markedFields.size() == 0) {
+            return null;
+        }
+
+        int checkmarks[] = new int[markedFields.size()];
+        for (int i = 0; i < markedFields.size(); i++) {
+            checkmarks[i] = markedFields.keyAt(i);
+        }
+        return checkmarks;
+    }
+
+
+    static class SavedState extends BaseSavedState {
+
+        public static final BaseSavedState.Creator<SavedState> CREATOR = new BaseSavedState.Creator<SavedState>() {
+
+            @Override
+            public SavedState createFromParcel(Parcel parcel) {
+                return new SavedState(parcel);
+            }
+
+            @Override
+            public SavedState[] newArray(int i) {
+                return new SavedState[0];
+            }
+        };
+
+        int markedFields[];
+
+        public SavedState(Parcel source) {
+            super(source);
+            source.readIntArray(markedFields);
+        }
+
+        public SavedState(Parcelable superState, int[] markedFields) {
+            super(superState);
+            this.markedFields = markedFields;
+        }
+
+        @Override
+        public void writeToParcel(Parcel out, int flags) {
+            super.writeToParcel(out, flags);
+            out.writeIntArray(markedFields);
+        }
+
     }
 
 }
