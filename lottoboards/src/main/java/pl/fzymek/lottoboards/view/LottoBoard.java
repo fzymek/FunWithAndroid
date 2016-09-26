@@ -1,6 +1,5 @@
 package pl.fzymek.lottoboards.view;
 
-import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
 import android.content.Context;
 import android.content.res.TypedArray;
@@ -9,7 +8,6 @@ import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
-import android.graphics.Point;
 import android.graphics.PointF;
 import android.graphics.Rect;
 import android.graphics.RectF;
@@ -27,15 +25,12 @@ import android.view.MotionEvent;
 import android.view.View;
 
 import pl.fzymek.lottoboards.R;
-import timber.log.Timber;
 
-@SuppressLint({"BinaryOperationInTimber", "TimberArgCount"})
 public class LottoBoard extends View implements View.OnTouchListener {
 
     class TapListener extends GestureDetector.SimpleOnGestureListener {
         @Override
         public boolean onSingleTapUp(MotionEvent e) {
-            Timber.d("event: %s", e);
             toggleCheckMarkOnField(new PointF(e.getX(), e.getY()));
             return true;
         }
@@ -332,11 +327,9 @@ public class LottoBoard extends View implements View.OnTouchListener {
             return;
         }
         if (markedFields.get(fieldIndex)) {
-            Timber.d("unmark %d", fieldIndex);
             markedFields.delete(fieldIndex);
         } else {
             if (markedFields.size() < maxSelections) {
-                Timber.d("mark %d", fieldIndex);
                 markedFields.put(fieldIndex, true);
             }
         }
@@ -344,7 +337,6 @@ public class LottoBoard extends View implements View.OnTouchListener {
     }
 
     private int calculateFieldIndexFromTap(PointF tapPoint) {
-        Timber.d("point: %s", tapPoint);
         int fieldNo=0;
         for (int i = 0; i < verticalFieldCount; i++) {
             int y = borderSize + dividerYPadding + i * fieldHeight + i * (dividerSize + dividerYPadding);
@@ -352,9 +344,7 @@ public class LottoBoard extends View implements View.OnTouchListener {
                 ++fieldNo;
                 int x = borderSize + dividerXPadding + j * fieldWidth + j * (dividerSize + dividerXPadding);
                 RectF field = new RectF(x,y, x+fieldWidth, y+fieldHeight);
-                Timber.d("rect: %s", field);
                 if (field.contains(tapPoint.x, tapPoint.y)) {
-                    Timber.d("point is in rect!");
                     return fieldNo;
                 }
             }
@@ -387,11 +377,11 @@ public class LottoBoard extends View implements View.OnTouchListener {
             return null;
         }
 
-        int checkmarks[] = new int[markedFields.size()];
+        int selectedIds[] = new int[markedFields.size()];
         for (int i = 0; i < markedFields.size(); i++) {
-            checkmarks[i] = markedFields.keyAt(i);
+            selectedIds[i] = markedFields.keyAt(i);
         }
-        return checkmarks;
+        return selectedIds;
     }
 
 
