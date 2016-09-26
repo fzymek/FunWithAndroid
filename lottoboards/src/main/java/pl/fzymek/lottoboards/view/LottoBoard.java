@@ -15,6 +15,7 @@ import android.os.Build;
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.support.annotation.DrawableRes;
+import android.support.annotation.IntDef;
 import android.text.TextPaint;
 import android.util.AttributeSet;
 import android.util.DisplayMetrics;
@@ -24,9 +25,13 @@ import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.View;
 
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+
 import pl.fzymek.lottoboards.R;
 
 public class LottoBoard extends View implements View.OnTouchListener {
+
 
     class TapListener extends GestureDetector.SimpleOnGestureListener {
         @Override
@@ -46,8 +51,13 @@ public class LottoBoard extends View implements View.OnTouchListener {
     private final static int DEFAULT_CORNER_RADIUS_DIP = 3;
     private final static int DEFAULT_TEXT_COLOR = Color.BLACK;
     private final static int DEFAULT_TEXT_SIZE_SP = 14;
-    private final static int CORNER_TYPE_SHARP = 0;
-    private final static int CORNER_TYPE_ROUND = 1;
+
+    @Retention(RetentionPolicy.SOURCE)
+    @IntDef({CORNER_TYPE_ROUND, CORNER_TYPE_SHARP})
+    public @interface CornerType {}
+
+    public final static int CORNER_TYPE_SHARP = 0;
+    public final static int CORNER_TYPE_ROUND = 1;
 
     int borderSize;
 
@@ -173,6 +183,102 @@ public class LottoBoard extends View implements View.OnTouchListener {
         setSaveEnabled(true);
     }
 
+    public int getBorderSize() {
+        return borderSize;
+    }
+
+    public void setBorderSize(int borderSize) {
+        this.borderSize = borderSize;
+    }
+
+    public int getBoardBackgroundColor() {
+        return backgroundColor;
+    }
+
+    public void setBoardBackgroundColor(int backgroundColor) {
+        this.backgroundColor = backgroundColor;
+    }
+
+    public int getHighlightBackgroundColor() {
+        return highlightBackgroundColor;
+    }
+
+    public void setHighlightBackgroundColor(int highlightBackgroundColor) {
+        this.highlightBackgroundColor = highlightBackgroundColor;
+    }
+
+    public int getDividerSize() {
+        return dividerSize;
+    }
+
+    public void setDividerSize(int dividerSize) {
+        this.dividerSize = dividerSize;
+    }
+
+    public int getHorizontalFieldCount() {
+        return horizontalFieldCount;
+    }
+
+    public void setHorizontalFieldCount(int horizontalFieldCount) {
+        this.horizontalFieldCount = horizontalFieldCount;
+    }
+
+    public int getVerticalFieldCount() {
+        return verticalFieldCount;
+    }
+
+    public void setVerticalFieldCount(int verticalFieldCount) {
+        this.verticalFieldCount = verticalFieldCount;
+    }
+
+    public @CornerType int getCornerType() {
+        return cornerType;
+    }
+
+    public void setCornerType(@CornerType int cornerType) {
+        this.cornerType = cornerType;
+    }
+
+    public int getCornerRadius() {
+        return cornerRadius;
+    }
+
+    public void setCornerRadius(int cornerRadius) {
+        this.cornerRadius = cornerRadius;
+    }
+
+    public int getTextColor() {
+        return textColor;
+    }
+
+    public void setTextColor(int textColor) {
+        this.textColor = textColor;
+    }
+
+    public int getTextSize() {
+        return textSize;
+    }
+
+    public void setTextSize(int textSize) {
+        this.textSize = textSize;
+    }
+
+    public int getMaxSelections() {
+        return maxSelections;
+    }
+
+    public void setMaxSelections(int maxSelections) {
+        this.maxSelections = maxSelections;
+    }
+
+    public @DrawableRes int getCheckMarkDrawable() {
+        return checkMarkDrawableRes;
+    }
+
+    public void setCheckMarkDrawable(@DrawableRes int checkMarkDrawableRes) {
+        this.checkMarkDrawableRes = checkMarkDrawableRes;
+    }
+
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
         calculateBoardSize(widthMeasureSpec, heightMeasureSpec);
@@ -197,7 +303,7 @@ public class LottoBoard extends View implements View.OnTouchListener {
         int minH = getPaddingTop() + getPaddingBottom() + getSuggestedMinimumHeight();
         int h = resolveSize(minH, heightMeasureSpec);
 
-        int size = Math.max(w, h);
+        int size = Math.min(w, h);
 
         setMeasuredDimension(size, size);
     }
