@@ -35,4 +35,13 @@ public class Hit {
     public void setLikes(int likes) {
         this.likes = likes;
     }
+
+    @Override
+    public String toString() {
+        return "Hit{" +
+                "id=" + id +
+                ", previewURL='" + previewURL + '\'' +
+                ", likes=" + likes +
+                '}';
+    }
 }

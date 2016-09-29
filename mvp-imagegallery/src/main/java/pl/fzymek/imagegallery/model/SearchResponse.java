@@ -37,4 +37,13 @@ public class SearchResponse {
     public void setHits(List<Hit> hits) {
         this.hits = hits;
     }
+
+    @Override
+    public String toString() {
+        return "SearchResponse{" +
+                "total=" + total +
+                ", totalHits=" + totalHits +
+                ", hits=" + hits +
+                '}';
+    }
 }

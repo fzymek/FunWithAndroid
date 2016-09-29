@@ -10,27 +10,33 @@
     android:paddingTop="@dimen/activity_vertical_margin"
     tools:context="pl.fzymek.imagegallery.gallery.GalleryActivity">
 
-    <android.support.v4.widget.SwipeRefreshLayout
+    <ProgressBar
         android:id="@+id/loadingView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:indeterminate="true"/>
+
+    <android.support.v4.widget.SwipeRefreshLayout
+        android:id="@+id/contentView"
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
-    <android.support.v7.widget.RecyclerView
-        android:id="@+id/contentView"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        <android.support.v7.widget.RecyclerView
+            android:id="@+id/recyclerView"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            tools:listitem="@layout/hit_card"/>
 
-        tools:listitem="@layout/hit_card"/>
-
+        <TextView
+            android:id="@+id/errorView"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:gravity="center"
+            android:text="@string/error_loading_gallery"
+            android:visibility="gone"/>
     </android.support.v4.widget.SwipeRefreshLayout>
 
-    <TextView
-        android:visibility="gone"
-        android:text="@string/error_loading_gallery"
-        android:id="@+id/errorView"
-        android:layout_gravity="center"
-        android:gravity="center"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"/>
 
 </FrameLayout>
