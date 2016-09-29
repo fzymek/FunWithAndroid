@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">MVP-CatGAllery</string>
+    <string name="error_loading_gallery">Error loading content, pull to refresh</string>
 </resources>
