@@ -1,11 +1,12 @@
 package pl.fzymek.imagegallery.gallery;
 
+import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.squareup.picasso.Picasso;
@@ -15,28 +16,33 @@ import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
-import pl.fzymek.imagegallery.model.Hit;
+import pl.fzymek.imagegallery.model.gettyimages.Image;
 import pl.fzymek.mvp_catgallery.R;
 import timber.log.Timber;
 
 public class GalleryAdapter extends RecyclerView.Adapter<GalleryAdapter.GalleryViewHolder> {
 
-    List<Hit> data = new ArrayList<>();
-
     public static class GalleryViewHolder extends RecyclerView.ViewHolder {
 
+        @BindView(R.id.card)
+        CardView card;
         @BindView(R.id.image)
-        ImageView imageView;
+        ImageView image;
         @BindView(R.id.title)
-        TextView textView;
+        TextView title;
+        @BindView(R.id.artist)
+        TextView artist;
+        @BindView(R.id.author_content)
+        LinearLayout authorConetnt;
 
         public GalleryViewHolder(View itemView) {
             super(itemView);
             ButterKnife.bind(this, itemView);
         }
     }
+    List<Image> data = new ArrayList<>();
 
-    public void setData(List<Hit> data) {
+    public void setData(List<Image> data) {
         this.data = data;
         notifyDataSetChanged();
     }
@@ -50,10 +56,15 @@ public class GalleryAdapter extends RecyclerView.Adapter<GalleryAdapter.GalleryV
 
     @Override
     public void onBindViewHolder(GalleryViewHolder holder, int position) {
-        Hit hit = getItem(position);
-        Timber.d("onBindViewHolder() called with: holder = [%s], position = [%s]", holder, hit);
-        holder.textView.setText("Likes: " + hit.getLikes());
-        Picasso.with(holder.imageView.getContext()).load(hit.getPreviewURL()).into(holder.imageView);
+        Image image = getItem(position);
+        String uri = image.getDisplayByType(Image.DisplaySizeType.PREVIEW).getUri();
+
+        Timber.d("onBindViewHolder %s", image);
+
+        holder.title.setText(image.getTitle());
+        holder.artist.setText(image.getArtist());
+        Picasso.with(holder.image.getContext()).load(uri).into(holder.image);
+
     }
 
     @Override
@@ -61,7 +72,7 @@ public class GalleryAdapter extends RecyclerView.Adapter<GalleryAdapter.GalleryV
         return data.size();
     }
 
-    Hit getItem(int position) {
+    Image getItem(int position) {
         return data.get(position);
     }
 }

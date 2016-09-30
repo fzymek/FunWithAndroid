@@ -3,7 +3,7 @@ package pl.fzymek.imagegallery.gallery;
 import com.hannesdorfmann.mosby.mvp.MvpBasePresenter;
 
 import pl.fzymek.imagegallery.config.Config;
-import pl.fzymek.imagegallery.network.PixabayService;
+import pl.fzymek.imagegallery.network.GettyImagesService;
 import retrofit2.Retrofit;
 import retrofit2.adapter.rxjava.RxJavaCallAdapterFactory;
 import retrofit2.converter.gson.GsonConverterFactory;
@@ -16,30 +16,40 @@ import timber.log.Timber;
  */
 public class GalleryPresenter extends MvpBasePresenter<GalleryView> {
 
-    PixabayService pixabayService;
+    GettyImagesService gettyImagesService;
 
     public GalleryPresenter() {
+        initGettyImagesService();
+    }
+
+    private void initGettyImagesService() {
         Retrofit retrofit = new Retrofit.Builder()
-                .baseUrl(Config.PIXABAY_API_URL)
+                .baseUrl(Config.GETTYIMAGES_API_URL)
                 .addConverterFactory(GsonConverterFactory.create())
                 .addCallAdapterFactory(RxJavaCallAdapterFactory.create())
                 .build();
 
-        pixabayService = retrofit.create(PixabayService.class);
+        gettyImagesService = retrofit.create(GettyImagesService.class);
+
     }
 
     public void loadData(String query, boolean pullToRefresh) {
         Timber.d("loadData(%s, %b)", query, pullToRefresh);
         getView().showLoading(pullToRefresh);
-        pixabayService.search(query)
+
+        gettyImagesService.getImages(query)
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(response -> {
-                    Timber.d("Response is: %s", response);
+                .subscribe(gettySearchResult -> {
                     if (isViewAttached()) {
-                        getView().setData(response);
+                        getView().setData(gettySearchResult);
                         getView().showContent();
                     }
+                }, throwable -> {
+                    if (isViewAttached()) {
+                        getView().showError(throwable, pullToRefresh);
+                    }
                 });
+
     }
 }

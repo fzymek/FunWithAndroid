@@ -2,8 +2,9 @@ package pl.fzymek.imagegallery.config;
 
 public final class Config {
 
-
-    public static final String PIXABAY_API_KEY = "3409723-009b9016a0b28d85b2a39ff25";
-    public static final String PIXABAY_API_URL = "https://pixabay.com/api/";
+    //gettyimages secrets
+    public static final String GETTYIMAGES_CONSUMER_KEY = "pwwnatcy69uwnybcfpzuxne3";
+    public static final String GETTYIMAGES_CONSUMER_SECRET = "aUqcm2bUTSK2Sm7h56Vhfgf5NMww3arHWXCB9nvskWudv";
+    public static final String GETTYIMAGES_API_URL = "https://api.gettyimages.com/v3/";
 
 }
