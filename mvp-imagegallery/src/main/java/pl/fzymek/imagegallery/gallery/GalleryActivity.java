@@ -39,7 +39,7 @@ public class GalleryActivity extends MvpLceViewStateActivity<SwipeRefreshLayout,
 
         layoutManager = new LinearLayoutManager(this);
         recyclerView.setLayoutManager(layoutManager);
-        recyclerView.addItemDecoration(new SpaceDecoration(this));
+        recyclerView.addItemDecoration(new SpaceDecoration());
 
         adapter = new GalleryAdapter();
         recyclerView.setAdapter(adapter);
