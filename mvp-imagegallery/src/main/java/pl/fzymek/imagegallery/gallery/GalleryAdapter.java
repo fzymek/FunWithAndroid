@@ -75,4 +75,8 @@ public class GalleryAdapter extends RecyclerView.Adapter<GalleryAdapter.GalleryV
     Image getItem(int position) {
         return data.get(position);
     }
+
+    public List<Image> getData() {
+        return data;
+    }
 }

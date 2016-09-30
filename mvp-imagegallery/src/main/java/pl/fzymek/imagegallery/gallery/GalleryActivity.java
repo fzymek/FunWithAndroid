@@ -6,18 +6,21 @@ import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 
-import com.hannesdorfmann.mosby.mvp.lce.MvpLceActivity;
+import com.hannesdorfmann.mosby.mvp.viewstate.lce.LceViewState;
+import com.hannesdorfmann.mosby.mvp.viewstate.lce.MvpLceViewStateActivity;
+import com.hannesdorfmann.mosby.mvp.viewstate.lce.data.RetainingLceViewState;
 
+import java.util.List;
 import java.util.Random;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
-import pl.fzymek.imagegallery.model.gettyimages.GettySearchResult;
+import pl.fzymek.imagegallery.model.gettyimages.Image;
 import pl.fzymek.imagegallery.views.SpaceDecoration;
 import pl.fzymek.mvp_catgallery.R;
 import timber.log.Timber;
 
-public class GalleryActivity extends MvpLceActivity<SwipeRefreshLayout, GettySearchResult, GalleryView, GalleryPresenter> implements GalleryView, SwipeRefreshLayout.OnRefreshListener {
+public class GalleryActivity extends MvpLceViewStateActivity<SwipeRefreshLayout, List<Image>, GalleryView, GalleryPresenter> implements GalleryView, SwipeRefreshLayout.OnRefreshListener {
 
     @BindView(R.id.recyclerView)
     RecyclerView recyclerView;
@@ -40,6 +43,12 @@ public class GalleryActivity extends MvpLceActivity<SwipeRefreshLayout, GettySea
 
         adapter = new GalleryAdapter();
         recyclerView.setAdapter(adapter);
+        setRetainInstance(true);
+    }
+
+    @Override
+    public void onNewViewStateInstance() {
+        Timber.d("onNewViewStateInstance");
         loadData(false);
     }
 
@@ -57,9 +66,9 @@ public class GalleryActivity extends MvpLceActivity<SwipeRefreshLayout, GettySea
     }
 
     @Override
-    public void setData(GettySearchResult data) {
+    public void setData(List<Image> data) {
         Timber.d("setData: %s", data);
-        adapter.setData(data.getImages());
+        adapter.setData(data);
     }
 
     @Override
@@ -76,6 +85,16 @@ public class GalleryActivity extends MvpLceActivity<SwipeRefreshLayout, GettySea
     public void showContent() {
         super.showContent();
         contentView.setRefreshing(false);
+    }
+
+    @Override
+    public LceViewState<List<Image>, GalleryView> createViewState() {
+        return new RetainingLceViewState<>();
+    }
+
+    @Override
+    public List<Image> getData() {
+        return adapter.getData();
     }
 
     @Override

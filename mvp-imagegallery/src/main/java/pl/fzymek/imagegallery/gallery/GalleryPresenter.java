@@ -42,7 +42,7 @@ public class GalleryPresenter extends MvpBasePresenter<GalleryView> {
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(gettySearchResult -> {
                     if (isViewAttached()) {
-                        getView().setData(gettySearchResult);
+                        getView().setData(gettySearchResult.getImages());
                         getView().showContent();
                     }
                 }, throwable -> {
