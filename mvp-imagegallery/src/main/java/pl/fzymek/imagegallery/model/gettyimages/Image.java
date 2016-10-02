@@ -1,14 +1,18 @@
 
 package pl.fzymek.imagegallery.model.gettyimages;
 
+import android.os.Parcel;
+import android.os.Parcelable;
+
 import com.google.gson.annotations.SerializedName;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
  * Created by Filip Zymek on 2015-06-08.
  */
-public class Image {
+public class Image implements Parcelable {
 
     @SerializedName("id")
     String id;
@@ -87,4 +91,46 @@ public class Image {
         }
 
     }
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(Parcel dest, int flags) {
+        dest.writeString(this.id);
+        dest.writeString(this.caption);
+        dest.writeString(this.title);
+        dest.writeString(this.artist);
+        dest.writeString(this.collectionName);
+        dest.writeString(this.dateCreated);
+        dest.writeTypedList(this.displaySizes);
+    }
+
+    public Image() {
+    }
+
+    protected Image(Parcel in) {
+        this.id = in.readString();
+        this.caption = in.readString();
+        this.title = in.readString();
+        this.artist = in.readString();
+        this.collectionName = in.readString();
+        this.dateCreated = in.readString();
+        this.displaySizes = new ArrayList<>();
+        in.readTypedList(this.displaySizes, DisplaySize.CREATOR);
+    }
+
+    public static final Parcelable.Creator<Image> CREATOR = new Parcelable.Creator<Image>() {
+        @Override
+        public Image createFromParcel(Parcel source) {
+            return new Image(source);
+        }
+
+        @Override
+        public Image[] newArray(int size) {
+            return new Image[size];
+        }
+    };
 }

@@ -1,5 +1,6 @@
 package pl.fzymek.imagegallery.gallery;
 
+import android.support.v4.view.ViewCompat;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -16,13 +17,17 @@ import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import pl.fzymek.imagegallery.R;
 import pl.fzymek.imagegallery.model.gettyimages.Image;
-import pl.fzymek.mvp_catgallery.R;
 import timber.log.Timber;
 
 public class GalleryAdapter extends RecyclerView.Adapter<GalleryAdapter.GalleryViewHolder> {
 
-    public static class GalleryViewHolder extends RecyclerView.ViewHolder {
+    public interface OnItemClickListener {
+        void onItemClicked(View view, Image image);
+    }
+
+    public class GalleryViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener{
 
         @BindView(R.id.card)
         CardView card;
@@ -38,13 +43,27 @@ public class GalleryAdapter extends RecyclerView.Adapter<GalleryAdapter.GalleryV
         public GalleryViewHolder(View itemView) {
             super(itemView);
             ButterKnife.bind(this, itemView);
+            itemView.setOnClickListener(this);
+        }
+
+        @Override
+        public void onClick(View view) {
+            if (itemClickListener != null) {
+                itemClickListener.onItemClicked(view, getItem(getAdapterPosition()));
+            }
         }
     }
+
     List<Image> data = new ArrayList<>();
+    OnItemClickListener itemClickListener;
 
     public void setData(List<Image> data) {
         this.data = data;
         notifyDataSetChanged();
+    }
+
+    public void setItemClickListener(OnItemClickListener itemClickListener) {
+        this.itemClickListener = itemClickListener;
     }
 
     @Override
@@ -64,6 +83,7 @@ public class GalleryAdapter extends RecyclerView.Adapter<GalleryAdapter.GalleryV
         holder.title.setText(image.getTitle());
         holder.artist.setText(image.getArtist());
         Picasso.with(holder.image.getContext()).load(uri).into(holder.image);
+        ViewCompat.setTransitionName(holder.image, "transition_"+image.getId());
 
     }
 

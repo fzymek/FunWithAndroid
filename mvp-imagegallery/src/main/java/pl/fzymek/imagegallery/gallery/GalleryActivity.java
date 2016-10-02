@@ -1,10 +1,17 @@
 package pl.fzymek.imagegallery.gallery;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.design.widget.Snackbar;
+import android.support.v4.app.ActivityOptionsCompat;
+import android.support.v4.util.Pair;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.transition.Explode;
+import android.view.View;
+import android.widget.Toast;
 
 import com.hannesdorfmann.mosby.mvp.viewstate.lce.LceViewState;
 import com.hannesdorfmann.mosby.mvp.viewstate.lce.MvpLceViewStateActivity;
@@ -15,9 +22,10 @@ import java.util.Random;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import pl.fzymek.imagegallery.R;
+import pl.fzymek.imagegallery.details.DetailsActivity;
 import pl.fzymek.imagegallery.model.gettyimages.Image;
 import pl.fzymek.imagegallery.views.SpaceDecoration;
-import pl.fzymek.mvp_catgallery.R;
 import timber.log.Timber;
 
 public class GalleryActivity extends MvpLceViewStateActivity<SwipeRefreshLayout, List<Image>, GalleryView, GalleryPresenter> implements GalleryView, SwipeRefreshLayout.OnRefreshListener {
@@ -37,11 +45,20 @@ public class GalleryActivity extends MvpLceViewStateActivity<SwipeRefreshLayout,
         ButterKnife.bind(this);
         contentView.setOnRefreshListener(this);
 
+//        getWindow().setExitTransition(new Explode());
+
         layoutManager = new LinearLayoutManager(this);
         recyclerView.setLayoutManager(layoutManager);
         recyclerView.addItemDecoration(new SpaceDecoration());
 
         adapter = new GalleryAdapter();
+        adapter.setItemClickListener((view, item) -> {
+            Intent intent = new Intent(this, DetailsActivity.class);
+            intent.putExtra("item", item);
+//            Toast.makeText(this, ""+item, Toast.LENGTH_SHORT).show();
+            ActivityOptionsCompat optionsCompat = ActivityOptionsCompat.makeSceneTransitionAnimation(this, new Pair(view.findViewById(R.id.image), "transition_" + item.getId()));
+            startActivity(intent, optionsCompat.toBundle());
+        });
         recyclerView.setAdapter(adapter);
         setRetainInstance(true);
     }
