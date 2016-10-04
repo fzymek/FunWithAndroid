@@ -18,7 +18,7 @@ public class GalleryPresenter extends MvpBasePresenter<GalleryView> {
 
     GettyImagesService gettyImagesService;
 
-    public GalleryPresenter() {
+    GalleryPresenter() {
         initGettyImagesService();
     }
 
@@ -33,7 +33,7 @@ public class GalleryPresenter extends MvpBasePresenter<GalleryView> {
 
     }
 
-    public void loadData(String query, boolean pullToRefresh) {
+    void loadData(String query, boolean pullToRefresh) {
         Timber.d("loadData(%s, %b)", query, pullToRefresh);
         getView().showLoading(pullToRefresh);
 

@@ -7,4 +7,10 @@ public final class Config {
     public static final String GETTYIMAGES_CONSUMER_SECRET = "aUqcm2bUTSK2Sm7h56Vhfgf5NMww3arHWXCB9nvskWudv";
     public static final String GETTYIMAGES_API_URL = "https://api.gettyimages.com/v3/";
 
+    public static final String[] QUERIES = {
+            "hot girls", "kitten", "puppy", "panda", "nightmare", "slam dunk",
+            "beach", "sunrise", "party", "tits", "alien", "landscape", "octopus",
+            "fish", "architecture", "college", "school", "astronomy"
+    };
+
 }

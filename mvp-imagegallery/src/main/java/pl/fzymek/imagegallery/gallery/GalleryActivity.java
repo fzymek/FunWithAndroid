@@ -1,17 +1,17 @@
 package pl.fzymek.imagegallery.gallery;
 
 import android.content.Intent;
+import android.content.res.Configuration;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
-import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityOptionsCompat;
 import android.support.v4.util.Pair;
 import android.support.v4.widget.SwipeRefreshLayout;
+import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.Toolbar;
 import android.transition.Explode;
-import android.view.View;
-import android.widget.Toast;
 
 import com.hannesdorfmann.mosby.mvp.viewstate.lce.LceViewState;
 import com.hannesdorfmann.mosby.mvp.viewstate.lce.MvpLceViewStateActivity;
@@ -23,17 +23,21 @@ import java.util.Random;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import pl.fzymek.imagegallery.R;
+import pl.fzymek.imagegallery.config.Config;
 import pl.fzymek.imagegallery.details.DetailsActivity;
 import pl.fzymek.imagegallery.model.gettyimages.Image;
 import pl.fzymek.imagegallery.views.SpaceDecoration;
 import timber.log.Timber;
 
-public class GalleryActivity extends MvpLceViewStateActivity<SwipeRefreshLayout, List<Image>, GalleryView, GalleryPresenter> implements GalleryView, SwipeRefreshLayout.OnRefreshListener {
+public class GalleryActivity extends MvpLceViewStateActivity<SwipeRefreshLayout, List<Image>, GalleryView, GalleryPresenter>
+        implements GalleryView, SwipeRefreshLayout.OnRefreshListener {
 
     @BindView(R.id.recyclerView)
     RecyclerView recyclerView;
+    @BindView(R.id.toolbar)
+    Toolbar toolbar;
 
-    LinearLayoutManager layoutManager;
+    RecyclerView.LayoutManager layoutManager;
     GalleryAdapter adapter;
 
     @Override
@@ -43,24 +47,36 @@ public class GalleryActivity extends MvpLceViewStateActivity<SwipeRefreshLayout,
         Timber.uprootAll();
         Timber.plant(new Timber.DebugTree());
         ButterKnife.bind(this);
+
+        setUpToolbar();
+
         contentView.setOnRefreshListener(this);
 
-//        getWindow().setExitTransition(new Explode());
+        if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT) {
+            layoutManager = new LinearLayoutManager(this);
+        } else {
+            layoutManager = new GridLayoutManager(this, 3);
+            GridLayoutManager lm = (GridLayoutManager) layoutManager;
+        }
 
-        layoutManager = new LinearLayoutManager(this);
         recyclerView.setLayoutManager(layoutManager);
         recyclerView.addItemDecoration(new SpaceDecoration());
 
-        adapter = new GalleryAdapter();
+        adapter = new GalleryAdapter(true, R.layout.hit_card);
         adapter.setItemClickListener((view, item) -> {
             Intent intent = new Intent(this, DetailsActivity.class);
             intent.putExtra("item", item);
-//            Toast.makeText(this, ""+item, Toast.LENGTH_SHORT).show();
             ActivityOptionsCompat optionsCompat = ActivityOptionsCompat.makeSceneTransitionAnimation(this, new Pair(view.findViewById(R.id.image), "transition_" + item.getId()));
             startActivity(intent, optionsCompat.toBundle());
         });
         recyclerView.setAdapter(adapter);
         setRetainInstance(true);
+    }
+
+    private void setUpToolbar() {
+        setSupportActionBar(toolbar);
+        getSupportActionBar().setHomeButtonEnabled(false);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(false);
     }
 
     @Override
@@ -78,7 +94,7 @@ public class GalleryActivity extends MvpLceViewStateActivity<SwipeRefreshLayout,
 
     @Override
     protected String getErrorMessage(Throwable e, boolean pullToRefresh) {
-        Timber.d("getErrorMessage");
+        Timber.d("getErrorMessage %s", e.getMessage());
         return e.getMessage();
     }
 
@@ -91,16 +107,18 @@ public class GalleryActivity extends MvpLceViewStateActivity<SwipeRefreshLayout,
     @Override
     public void loadData(boolean pullToRefresh) {
         Timber.d("loadData: %b", pullToRefresh);
-
-        String[] data = {
-            "hot girls", "kitten", "puppy", "panda", "nightmare", "slam dunk", "beach", "sunrise", "party"
-        };
-        presenter.loadData(data[new Random().nextInt(data.length)], pullToRefresh);
+        presenter.loadData(Config.QUERIES[new Random().nextInt(Config.QUERIES.length)], pullToRefresh);
     }
 
     @Override
     public void showContent() {
         super.showContent();
+        contentView.setRefreshing(false);
+    }
+
+    @Override
+    public void showError(Throwable e, boolean pullToRefresh) {
+        super.showError(e, pullToRefresh);
         contentView.setRefreshing(false);
     }
 

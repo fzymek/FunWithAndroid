@@ -1,5 +1,6 @@
 package pl.fzymek.imagegallery.gallery;
 
+import android.support.annotation.LayoutRes;
 import android.support.v4.view.ViewCompat;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
@@ -35,10 +36,7 @@ public class GalleryAdapter extends RecyclerView.Adapter<GalleryAdapter.GalleryV
         ImageView image;
         @BindView(R.id.title)
         TextView title;
-        @BindView(R.id.artist)
         TextView artist;
-        @BindView(R.id.author_content)
-        LinearLayout authorConetnt;
 
         public GalleryViewHolder(View itemView) {
             super(itemView);
@@ -56,6 +54,13 @@ public class GalleryAdapter extends RecyclerView.Adapter<GalleryAdapter.GalleryV
 
     List<Image> data = new ArrayList<>();
     OnItemClickListener itemClickListener;
+    boolean shouldShowAuthor;
+    @LayoutRes int itemLayout;
+
+    public GalleryAdapter(boolean shouldShowAuthor, @LayoutRes int itemLayout) {
+        this.shouldShowAuthor = shouldShowAuthor;
+        this.itemLayout = itemLayout;
+    }
 
     public void setData(List<Image> data) {
         this.data = data;
@@ -69,7 +74,7 @@ public class GalleryAdapter extends RecyclerView.Adapter<GalleryAdapter.GalleryV
     @Override
     public GalleryViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         Timber.d("onCreateViewHolder");
-        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.hit_card, parent, false);
+        View view = LayoutInflater.from(parent.getContext()).inflate(itemLayout, parent, false);
         return new GalleryViewHolder(view);
     }
 
@@ -81,7 +86,13 @@ public class GalleryAdapter extends RecyclerView.Adapter<GalleryAdapter.GalleryV
         Timber.d("onBindViewHolder %s", image);
 
         holder.title.setText(image.getTitle());
-        holder.artist.setText(image.getArtist());
+        String artist = image.getArtist();
+        View authorContent = holder.itemView.findViewById(R.id.author_content);
+        if (shouldShowAuthor && authorContent != null && (artist != null && artist.length() > 0)) {
+            authorContent.setVisibility(View.VISIBLE);
+            TextView author = (TextView) authorContent.findViewById(R.id.artist);
+            author.setText(artist);
+        }
         Picasso.with(holder.image.getContext()).load(uri).into(holder.image);
         ViewCompat.setTransitionName(holder.image, "transition_"+image.getId());
 
