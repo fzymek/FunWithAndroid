@@ -24,7 +24,7 @@ public class MainActivity extends AppCompatActivity {
         setSupportActionBar(toolbar);
 
         if (savedInstanceState == null) {
-            getFragmentManager().beginTransaction()
+            getSupportFragmentManager().beginTransaction()
                     .replace(R.id.content, new GalleryFragment())
                     .commit();
         }
@@ -32,8 +32,8 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     public void onBackPressed() {
-        if (getFragmentManager().getBackStackEntryCount() > 0) {
-            getFragmentManager().popBackStack();
+        if (getSupportFragmentManager().getBackStackEntryCount() > 0) {
+            getSupportFragmentManager().popBackStack();
         } else {
             super.onBackPressed();
         }

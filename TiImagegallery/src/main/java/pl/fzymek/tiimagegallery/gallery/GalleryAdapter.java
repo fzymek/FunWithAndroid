@@ -1,15 +1,22 @@
 package pl.fzymek.tiimagegallery.gallery;
 
+import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
+import android.widget.TextView;
+
+import com.bumptech.glide.Glide;
 
 import java.util.List;
 
+import butterknife.BindView;
 import butterknife.ButterKnife;
 import pl.fzymek.gettyimagesmodel.gettyimages.Image;
 import pl.fzymek.tiimagegallery.R;
+import timber.log.Timber;
 
 public class GalleryAdapter extends RecyclerView.Adapter<GalleryAdapter.ViewHolder> {
 
@@ -17,10 +24,16 @@ public class GalleryAdapter extends RecyclerView.Adapter<GalleryAdapter.ViewHold
         void onItemClicked(View view, Image image);
     }
 
-    List<Image> data;
-    OnItemClickListener listener;
-
     class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
+
+        @BindView(R.id.card)
+        CardView card;
+        @BindView(R.id.image)
+        ImageView image;
+        @BindView(R.id.title)
+        TextView title;
+        TextView artist;
+
         ViewHolder(View view) {
             super(view);
             ButterKnife.bind(this, view);
@@ -34,12 +47,10 @@ public class GalleryAdapter extends RecyclerView.Adapter<GalleryAdapter.ViewHold
             }
         }
     }
+    List<Image> data;
+    OnItemClickListener listener;
 
     GalleryAdapter() {
-    }
-
-    Image getItem(int position) {
-        return data.get(position);
     }
 
     @Override
@@ -50,15 +61,36 @@ public class GalleryAdapter extends RecyclerView.Adapter<GalleryAdapter.ViewHold
 
     @Override
     public void onBindViewHolder(final ViewHolder holder, int position) {
+        Image image = getItem(position);
+        String uri = image.getDisplayByType(Image.DisplaySizeType.PREVIEW).getUri();
+
+        Timber.d("onBindViewHolder %s", image);
+
+        holder.title.setText(image.getTitle());
+        String artist = image.getArtist();
+        View authorContent = holder.itemView.findViewById(R.id.author_content);
+        authorContent.setVisibility(View.VISIBLE);
+        TextView author = (TextView) authorContent.findViewById(R.id.artist);
+        author.setText(artist);
+
+        Glide.with(holder.image.getContext())
+                .load(uri)
+                .centerCrop()
+                .crossFade()
+                .into(holder.image);
     }
 
-    public void setData(List<Image> data) {
-        this.data = data;
-        notifyDataSetChanged();
+    Image getItem(int position) {
+        return data.get(position);
     }
 
     @Override
     public int getItemCount() {
         return data.size();
+    }
+
+    public void setData(List<Image> data) {
+        this.data = data;
+        notifyDataSetChanged();
     }
 }

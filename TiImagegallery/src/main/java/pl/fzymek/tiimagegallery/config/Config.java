@@ -1,4 +1,4 @@
-package pl.fzymek.imagegallery.config;
+package pl.fzymek.tiimagegallery.config;
 
 public final class Config {
 

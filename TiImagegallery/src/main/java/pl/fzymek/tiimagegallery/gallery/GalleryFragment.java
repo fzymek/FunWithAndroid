@@ -1,25 +1,45 @@
 package pl.fzymek.tiimagegallery.gallery;
 
-import android.app.Fragment;
 import android.content.Context;
 import android.content.res.Configuration;
+import android.graphics.Rect;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ProgressBar;
+import android.widget.TextView;
+
+import net.grandcentrix.thirtyinch.TiFragment;
+
+import java.util.List;
+import java.util.Random;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.Unbinder;
+import pl.fzymek.gettyimagesmodel.gettyimages.Image;
 import pl.fzymek.tiimagegallery.R;
+import pl.fzymek.tiimagegallery.config.Config;
+import timber.log.Timber;
 
-public class GalleryFragment extends Fragment {
+public class GalleryFragment extends TiFragment<GalleryPresenter, GalleryView> implements GalleryView, SwipeRefreshLayout.OnRefreshListener {
 
     @BindView(R.id.recyclerView)
     RecyclerView recyclerView;
+    @BindView(R.id.progress)
+    ProgressBar progressBar;
+    @BindView(R.id.error)
+    TextView error;
+    @BindView(R.id.contentView)
+    SwipeRefreshLayout contentView;
+
     GalleryAdapter adapter;
     Unbinder unbinder;
 
@@ -31,8 +51,9 @@ public class GalleryFragment extends Fragment {
 
     @Override
     public void onViewCreated(View view, Bundle savedInstanceState) {
-
         unbinder = ButterKnife.bind(this, view);
+        contentView.setOnRefreshListener(this);
+
         Context context = view.getContext();
         if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT) {
             recyclerView.setLayoutManager(new LinearLayoutManager(context));
@@ -40,6 +61,7 @@ public class GalleryFragment extends Fragment {
             recyclerView.setLayoutManager(new GridLayoutManager(context, 3));
         }
         adapter = new GalleryAdapter();
+        recyclerView.addItemDecoration(new SpaceDecoration());
         recyclerView.setAdapter(adapter);
     }
 
@@ -47,5 +69,70 @@ public class GalleryFragment extends Fragment {
     public void onDestroyView() {
         super.onDestroyView();
         unbinder.unbind();
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        loadData(false);
+    }
+
+    @NonNull
+    @Override
+    public GalleryPresenter providePresenter() {
+        Timber.d("providePresenter");
+        return new GalleryPresenter();
+    }
+
+    @Override
+    public void startLoading(boolean pullToRefresh) {
+        progressBar.setVisibility(View.VISIBLE);
+        contentView.setVisibility(View.GONE);
+        error.setVisibility(View.GONE);
+        contentView.setRefreshing(pullToRefresh);
+    }
+
+    @Override
+    public void stopLoading() {
+        contentView.setVisibility(View.VISIBLE);
+        progressBar.setVisibility(View.GONE);
+        error.setVisibility(View.GONE);
+        contentView.setRefreshing(false);
+    }
+
+    @Override
+    public void showError(Throwable err) {
+        error.setVisibility(View.VISIBLE);
+        contentView.setVisibility(View.GONE);
+        progressBar.setVisibility(View.GONE);
+        contentView.setRefreshing(false);
+    }
+
+    @Override
+    public void showGallery(List<Image> images) {
+        adapter.setData(images);
+    }
+
+    @Override
+    public void onRefresh() {
+        loadData(true);
+    }
+
+    private void loadData(boolean pullToRefresh) {
+        String phrase = Config.QUERIES[new Random().nextInt(Config.QUERIES.length)];
+        getPresenter().loadData(phrase, pullToRefresh);
+    }
+}
+
+class SpaceDecoration extends RecyclerView.ItemDecoration {
+
+    @Override
+    public void getItemOffsets(Rect outRect, View view, RecyclerView parent, RecyclerView.State state) {
+        int spacing = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 4.0f, view.getResources().getDisplayMetrics());
+        if (parent.getChildAdapterPosition(view) != parent.getAdapter().getItemCount() - 1) {
+            outRect.bottom = spacing;
+        }
+        outRect.left = spacing;
+        outRect.right = spacing;
     }
 }
