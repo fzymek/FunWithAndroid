@@ -24,10 +24,10 @@ import java.util.Random;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import pl.fzymek.gettyimagesmodel.gettyimages.Image;
 import pl.fzymek.imagegallery.R;
 import pl.fzymek.imagegallery.config.Config;
 import pl.fzymek.imagegallery.gallery.GalleryAdapter;
-import pl.fzymek.imagegallery.model.gettyimages.Image;
 import pl.fzymek.imagegallery.views.SpaceDecoration;
 import timber.log.Timber;
 

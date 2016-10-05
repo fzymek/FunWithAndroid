@@ -1,5 +1,5 @@
 
-package pl.fzymek.imagegallery.model.gettyimages;
+package pl.fzymek.gettyimagesmodel.gettyimages;
 
 import com.google.gson.annotations.SerializedName;
 

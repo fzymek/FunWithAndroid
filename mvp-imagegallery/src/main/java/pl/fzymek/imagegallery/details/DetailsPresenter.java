@@ -4,8 +4,8 @@ import android.content.Intent;
 
 import com.hannesdorfmann.mosby.mvp.MvpBasePresenter;
 
+import pl.fzymek.gettyimagesmodel.gettyimages.Image;
 import pl.fzymek.imagegallery.config.Config;
-import pl.fzymek.imagegallery.model.gettyimages.Image;
 import pl.fzymek.imagegallery.network.GettyImagesService;
 import retrofit2.Retrofit;
 import retrofit2.adapter.rxjava.RxJavaCallAdapterFactory;

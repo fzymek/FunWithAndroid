@@ -11,7 +11,6 @@ import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
-import android.transition.Explode;
 
 import com.hannesdorfmann.mosby.mvp.viewstate.lce.LceViewState;
 import com.hannesdorfmann.mosby.mvp.viewstate.lce.MvpLceViewStateActivity;
@@ -22,10 +21,10 @@ import java.util.Random;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import pl.fzymek.gettyimagesmodel.gettyimages.Image;
 import pl.fzymek.imagegallery.R;
 import pl.fzymek.imagegallery.config.Config;
 import pl.fzymek.imagegallery.details.DetailsActivity;
-import pl.fzymek.imagegallery.model.gettyimages.Image;
 import pl.fzymek.imagegallery.views.SpaceDecoration;
 import timber.log.Timber;
 

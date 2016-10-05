@@ -1,7 +1,7 @@
 package pl.fzymek.imagegallery.network;
 
+import pl.fzymek.gettyimagesmodel.gettyimages.GettySearchResult;
 import pl.fzymek.imagegallery.config.Config;
-import pl.fzymek.imagegallery.model.gettyimages.GettySearchResult;
 import retrofit2.http.GET;
 import retrofit2.http.Headers;
 import retrofit2.http.Query;

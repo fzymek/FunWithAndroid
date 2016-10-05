@@ -1,10 +1,9 @@
 
-package pl.fzymek.imagegallery.model.gettyimages;
+package pl.fzymek.gettyimagesmodel.gettyimages;
 
 import android.os.Parcel;
 import android.os.Parcelable;
 
-import com.google.gson.annotations.SerializedName;
 import com.google.gson.annotations.SerializedName;
 
 /**
@@ -51,7 +50,7 @@ public class DisplaySize implements Parcelable {
         this.uri = in.readString();
     }
 
-    public static final Parcelable.Creator<DisplaySize> CREATOR = new Parcelable.Creator<DisplaySize>() {
+    public static final Creator<DisplaySize> CREATOR = new Creator<DisplaySize>() {
         @Override
         public DisplaySize createFromParcel(Parcel source) {
             return new DisplaySize(source);
