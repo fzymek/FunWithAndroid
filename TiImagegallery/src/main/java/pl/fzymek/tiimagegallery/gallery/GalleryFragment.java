@@ -2,14 +2,12 @@ package pl.fzymek.tiimagegallery.gallery;
 
 import android.content.Context;
 import android.content.res.Configuration;
-import android.graphics.Rect;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -27,6 +25,7 @@ import butterknife.Unbinder;
 import pl.fzymek.gettyimagesmodel.gettyimages.Image;
 import pl.fzymek.tiimagegallery.R;
 import pl.fzymek.tiimagegallery.config.Config;
+import pl.fzymek.tiimagegallery.util.SpaceDecoration;
 import timber.log.Timber;
 
 public class GalleryFragment extends TiFragment<GalleryPresenter, GalleryView> implements GalleryView, SwipeRefreshLayout.OnRefreshListener {
@@ -124,15 +123,3 @@ public class GalleryFragment extends TiFragment<GalleryPresenter, GalleryView> i
     }
 }
 
-class SpaceDecoration extends RecyclerView.ItemDecoration {
-
-    @Override
-    public void getItemOffsets(Rect outRect, View view, RecyclerView parent, RecyclerView.State state) {
-        int spacing = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 4.0f, view.getResources().getDisplayMetrics());
-        if (parent.getChildAdapterPosition(view) != parent.getAdapter().getItemCount() - 1) {
-            outRect.bottom = spacing;
-        }
-        outRect.left = spacing;
-        outRect.right = spacing;
-    }
-}
