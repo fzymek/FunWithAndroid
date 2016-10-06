@@ -4,10 +4,13 @@ import android.content.Context;
 import android.content.res.Configuration;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.v4.app.FragmentManager;
 import android.support.v4.widget.SwipeRefreshLayout;
+import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.Toolbar;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -25,6 +28,8 @@ import butterknife.Unbinder;
 import pl.fzymek.gettyimagesmodel.gettyimages.Image;
 import pl.fzymek.tiimagegallery.R;
 import pl.fzymek.tiimagegallery.config.Config;
+import pl.fzymek.tiimagegallery.details.DetailsFragment;
+import pl.fzymek.tiimagegallery.util.ImageTransition;
 import pl.fzymek.tiimagegallery.util.SpaceDecoration;
 import timber.log.Timber;
 
@@ -38,9 +43,22 @@ public class GalleryFragment extends TiFragment<GalleryPresenter, GalleryView> i
     TextView error;
     @BindView(R.id.contentView)
     SwipeRefreshLayout contentView;
+    @BindView(R.id.toolbar)
+    Toolbar toolbar;
 
     GalleryAdapter adapter;
+    RecyclerView.LayoutManager layoutManager;
     Unbinder unbinder;
+
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        adapter = new GalleryAdapter();
+        adapter.setListener((v, image) -> {
+            Timber.d("clicked: %s", v);
+            openDetails(v, image);
+        });
+    }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -51,17 +69,34 @@ public class GalleryFragment extends TiFragment<GalleryPresenter, GalleryView> i
     @Override
     public void onViewCreated(View view, Bundle savedInstanceState) {
         unbinder = ButterKnife.bind(this, view);
+        ((AppCompatActivity)getActivity()).setSupportActionBar(toolbar);
+        ((AppCompatActivity)getActivity()).getSupportActionBar().setHomeButtonEnabled(false);
         contentView.setOnRefreshListener(this);
 
         Context context = view.getContext();
         if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT) {
-            recyclerView.setLayoutManager(new LinearLayoutManager(context));
+            layoutManager = new LinearLayoutManager(context);
         } else {
-            recyclerView.setLayoutManager(new GridLayoutManager(context, 3));
+            layoutManager = new GridLayoutManager(context, 3);
         }
-        adapter = new GalleryAdapter();
+
+        recyclerView.setLayoutManager(layoutManager);
         recyclerView.addItemDecoration(new SpaceDecoration());
         recyclerView.setAdapter(adapter);
+    }
+
+    void openDetails(View view, Image image) {
+        FragmentManager fm = getActivity().getSupportFragmentManager();
+        DetailsFragment fragment = DetailsFragment.newInstance(image);
+        ImageTransition sharedElementEnterTransition = new ImageTransition();
+        fragment.setSharedElementEnterTransition(sharedElementEnterTransition);
+//        setSharedElementReturnTransition(sharedElementEnterTransition);
+        fm.beginTransaction()
+                .replace(R.id.content, fragment)
+                .addSharedElement(view.findViewById(R.id.image), "transition_"+image.getId())
+                .addToBackStack(null)
+                .commit();
+
     }
 
     @Override

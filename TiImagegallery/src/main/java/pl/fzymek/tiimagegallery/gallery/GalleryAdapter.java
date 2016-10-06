@@ -1,5 +1,6 @@
 package pl.fzymek.tiimagegallery.gallery;
 
+import android.support.v4.view.ViewCompat;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -54,6 +55,10 @@ public class GalleryAdapter extends RecyclerView.Adapter<GalleryAdapter.ViewHold
     GalleryAdapter() {
     }
 
+    void setListener(OnItemClickListener listener) {
+        this.listener = listener;
+    }
+
     @Override
     public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.fragment_gallery_item, parent, false);
@@ -77,11 +82,12 @@ public class GalleryAdapter extends RecyclerView.Adapter<GalleryAdapter.ViewHold
         Glide.with(holder.image.getContext())
                 .load(uri)
                 .centerCrop()
-                .crossFade()
+//                .crossFade()
                 .into(holder.image);
+        ViewCompat.setTransitionName(holder.image, "transition_"+image.getId());
     }
 
-    Image getItem(int position) {
+    private Image getItem(int position) {
         return data.get(position);
     }
 
@@ -90,7 +96,7 @@ public class GalleryAdapter extends RecyclerView.Adapter<GalleryAdapter.ViewHold
         return data.size();
     }
 
-    public void setData(List<Image> data) {
+    void setData(List<Image> data) {
         this.data = data;
         notifyDataSetChanged();
     }

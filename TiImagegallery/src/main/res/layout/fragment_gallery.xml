@@ -1,23 +1,49 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout
+<android.support.design.widget.CoordinatorLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:layout_marginLeft="16dp"
-    android:layout_marginRight="16dp">
+    android:layout_height="match_parent">
 
-    <ProgressBar
-        android:id="@+id/progress"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        android:indeterminate="true"/>
+    <android.support.design.widget.AppBarLayout
+        android:layout_gravity="top"
+        android:layout_height="?android:attr/actionBarSize"
+        android:layout_width="match_parent">
 
-    <android.support.v4.widget.SwipeRefreshLayout
-        android:id="@+id/contentView"
+            <android.support.v7.widget.Toolbar
+                android:id="@+id/toolbar"
+                android:layout_height="?attr/actionBarSize"
+                android:layout_width="match_parent">
+            </android.support.v7.widget.Toolbar>
+    </android.support.design.widget.AppBarLayout>
+
+    <FrameLayout
+        android:padding="8dp"
+        android:layout_marginTop="?android:attr/actionBarSize"
         android:layout_width="match_parent"
         android:layout_height="match_parent">
+
+        <ProgressBar
+            android:id="@+id/progress"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:indeterminate="true"/>
+
+        <android.support.v4.widget.SwipeRefreshLayout
+            android:id="@+id/contentView"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+
+        </android.support.v4.widget.SwipeRefreshLayout>
+
+        <TextView
+            tools:text="Error happened! :("
+            android:id="@+id/error"
+            android:layout_gravity="center"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"/>
 
         <android.support.v7.widget.RecyclerView
             android:id="@+id/recyclerView"
@@ -27,14 +53,6 @@
             tools:context="pl.fzymek.tiimagegallery.gallery.GalleryFragment"
             tools:listitem="@layout/fragment_gallery_item"/>
 
+    </FrameLayout>
 
-    </android.support.v4.widget.SwipeRefreshLayout>
-
-    <TextView
-        tools:text="Error happened! :("
-        android:id="@+id/error"
-        android:layout_gravity="center"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"/>
-
-</FrameLayout>
+</android.support.design.widget.CoordinatorLayout>

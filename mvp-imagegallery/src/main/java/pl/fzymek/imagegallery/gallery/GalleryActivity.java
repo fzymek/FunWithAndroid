@@ -55,7 +55,6 @@ public class GalleryActivity extends MvpLceViewStateActivity<SwipeRefreshLayout,
             layoutManager = new LinearLayoutManager(this);
         } else {
             layoutManager = new GridLayoutManager(this, 3);
-            GridLayoutManager lm = (GridLayoutManager) layoutManager;
         }
 
         recyclerView.setLayoutManager(layoutManager);
