@@ -10,6 +10,7 @@ import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
 
+import java.util.Collections;
 import java.util.List;
 
 import butterknife.BindView;
@@ -47,8 +48,8 @@ public class GalleryAdapter extends RecyclerView.Adapter<GalleryAdapter.ViewHold
             }
         }
     }
-    List<Image> data;
-    OnItemClickListener listener;
+    private List<Image> data = Collections.emptyList();
+    private OnItemClickListener listener;
 
     GalleryAdapter() {
     }
