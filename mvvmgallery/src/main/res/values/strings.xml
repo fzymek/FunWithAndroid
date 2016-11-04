@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">"MVVM Gallery "</string>
+    <string name="error_loading_data">Error while loading data ;( Pull to refresh.</string>
+</resources>

@@ -1,1 +1,1 @@
-include ':Permissions', ':AppLister', ':lottoboards', ':mvp-imagegallery', ':TiImagegallery', ':gettyimagesmodel'
+include ':Permissions', ':AppLister', ':lottoboards', ':mvp-imagegallery', ':TiImagegallery', ':gettyimagesmodel', ':mvvmgallery'
