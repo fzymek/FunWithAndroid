@@ -10,12 +10,21 @@
         android:label="@string/app_name"
         android:supportsRtl="true"
         android:theme="@style/AppTheme.NoActionBar">
-        <activity android:name=".MVVMGalleryActivity">
+        <activity android:name=".gallery.MVVMGalleryActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
 
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
+        </activity>
+        <activity
+            android:name=".details.DetailsActivity"
+            android:label="@string/title_activity_details"
+            android:parentActivityName=".gallery.MVVMGalleryActivity"
+            android:theme="@style/AppTheme.NoActionBar">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="pl.fzymek.mvvmgallery.gallery.MVVMGalleryActivity"/>
         </activity>
     </application>
 

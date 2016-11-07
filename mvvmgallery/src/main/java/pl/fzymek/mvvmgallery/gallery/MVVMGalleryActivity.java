@@ -1,5 +1,6 @@
-package pl.fzymek.mvvmgallery;
+package pl.fzymek.mvvmgallery.gallery;
 
+import android.content.Intent;
 import android.content.res.Configuration;
 import android.databinding.DataBindingUtil;
 import android.os.Bundle;
@@ -13,9 +14,10 @@ import android.view.View;
 import java.util.Random;
 
 import pl.fzymek.gettyimagesmodel.gettyimages.GettySearchResult;
+import pl.fzymek.mvvmgallery.R;
 import pl.fzymek.mvvmgallery.config.Config;
 import pl.fzymek.mvvmgallery.databinding.ActivityMainBinding;
-import pl.fzymek.mvvmgallery.gallery.GalleryAdapter;
+import pl.fzymek.mvvmgallery.details.DetailsActivity;
 import pl.fzymek.mvvmgallery.network.GettyImagesService;
 import pl.fzymek.mvvmgallery.viewmodel.GettySearchResultViewModel;
 import pl.fzymek.mvvmgallery.views.SpaceDecoration;
@@ -29,6 +31,30 @@ import rx.schedulers.Schedulers;
 import timber.log.Timber;
 
 public class MVVMGalleryActivity extends AppCompatActivity implements SwipeRefreshLayout.OnRefreshListener {
+
+    private class ImageSearchObserver implements Observer<GettySearchResult> {
+
+        @Override
+        public void onCompleted() {
+            Timber.d("onCompleted");
+        }
+
+        @Override
+        public void onError(Throwable e) {
+            Timber.e(e, "Error while loading data");
+            showError();
+        }
+
+        @Override
+        public void onNext(GettySearchResult result) {
+            Timber.d("onNext");
+            GettySearchResultViewModel viewModel = new GettySearchResultViewModel(result);
+            viewDataBinding.setVariable(pl.fzymek.mvvmgallery.BR.result, viewModel);
+            viewDataBinding.executePendingBindings();
+            showData();
+        }
+
+    }
 
     RecyclerView.LayoutManager layoutManager;
     ActivityMainBinding viewDataBinding;
@@ -52,26 +78,6 @@ public class MVVMGalleryActivity extends AppCompatActivity implements SwipeRefre
 
     }
 
-    private void setupRecycler() {
-        if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT) {
-            layoutManager = new LinearLayoutManager(this);
-        } else {
-            layoutManager = new GridLayoutManager(this, 3);
-        }
-
-        adapter = new GalleryAdapter();
-        viewDataBinding.recycler.setLayoutManager(layoutManager);
-        viewDataBinding.recycler.addItemDecoration(new SpaceDecoration());
-        viewDataBinding.recycler.setAdapter(adapter);
-    }
-
-    private void setupToolbar() {
-        setSupportActionBar(viewDataBinding.toolbar);
-        getSupportActionBar().setTitle(R.string.app_name);
-        getSupportActionBar().setHomeButtonEnabled(true);
-        getSupportActionBar().setDisplayHomeAsUpEnabled(false);
-    }
-
     private void configureTimber() {
         Timber.uprootAll();
         Timber.plant(new Timber.DebugTree());
@@ -86,34 +92,43 @@ public class MVVMGalleryActivity extends AppCompatActivity implements SwipeRefre
         imagesService = retrofit.create(GettyImagesService.class);
     }
 
-    private String getRandomPhrase() {
-        String query = Config.QUERIES[new Random().nextInt(Config.QUERIES.length)];
-        Timber.d("Using query '%s'", query);
-        return query;
+    private void setupToolbar() {
+        setSupportActionBar(viewDataBinding.toolbar);
+        getSupportActionBar().setTitle(R.string.app_name);
+        getSupportActionBar().setHomeButtonEnabled(true);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(false);
     }
 
-    private class ImageSearchObserver implements Observer<GettySearchResult> {
-
-        @Override
-        public void onCompleted() {
-            Timber.d("onCompleted");
+    private void setupRecycler() {
+        if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT) {
+            layoutManager = new LinearLayoutManager(this);
+        } else {
+            layoutManager = new GridLayoutManager(this, 3);
         }
 
-        @Override
-        public void onError(Throwable e) {
-            Timber.e(e, "Error while loading data");
-            showError();
-        }
+        adapter = new GalleryAdapter();
+        adapter.setListener((position, data) -> {
+            Intent details = new Intent(MVVMGalleryActivity.this, DetailsActivity.class);
+            details.putExtra("image", data);
+            startActivity(details);
+        });
+        viewDataBinding.recycler.setLayoutManager(layoutManager);
+        viewDataBinding.recycler.addItemDecoration(new SpaceDecoration());
+        viewDataBinding.recycler.setAdapter(adapter);
+    }
 
-        @Override
-        public void onNext(GettySearchResult result) {
-            Timber.d("onNext");
-            GettySearchResultViewModel viewModel = new GettySearchResultViewModel(result);
-            viewDataBinding.setVariable(BR.result, viewModel);
-            viewDataBinding.executePendingBindings();
-            showData();
+    private void loadData(boolean pull2Refreh) {
+        Timber.d("loadData(%b)", pull2Refreh);
+        if (!pull2Refreh) {
+            showProgress();
         }
+        viewDataBinding.content.setRefreshing(pull2Refreh);
 
+        Observable<GettySearchResult> searchResultObservable = imagesService.getImages(getRandomPhrase());
+        imageSearchObserver = new ImageSearchObserver();
+        searchResultObservable
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(imageSearchObserver);
     }
 
     void showProgress() {
@@ -122,6 +137,12 @@ public class MVVMGalleryActivity extends AppCompatActivity implements SwipeRefre
         viewDataBinding.recycler.setVisibility(View.GONE);
         viewDataBinding.error.setVisibility(View.GONE);
         viewDataBinding.count.setVisibility(View.GONE);
+    }
+
+    private String getRandomPhrase() {
+        String query = Config.QUERIES[new Random().nextInt(Config.QUERIES.length)];
+        Timber.d("Using query '%s'", query);
+        return query;
     }
 
     void showData() {
@@ -144,19 +165,5 @@ public class MVVMGalleryActivity extends AppCompatActivity implements SwipeRefre
     @Override
     public void onRefresh() {
         loadData(true);
-    }
-
-    private void loadData(boolean pull2Refreh) {
-        Timber.d("loadData(%b)", pull2Refreh);
-        if (!pull2Refreh) {
-            showProgress();
-        }
-        viewDataBinding.content.setRefreshing(pull2Refreh);
-
-        Observable<GettySearchResult> searchResultObservable = imagesService.getImages(getRandomPhrase());
-        imageSearchObserver = new ImageSearchObserver();
-        searchResultObservable
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(imageSearchObserver);
     }
 }

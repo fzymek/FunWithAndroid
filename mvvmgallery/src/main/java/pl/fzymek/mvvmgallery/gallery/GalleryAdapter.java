@@ -4,28 +4,45 @@ import android.databinding.DataBindingUtil;
 import android.databinding.ViewDataBinding;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
+import android.view.View;
 import android.view.ViewGroup;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import pl.fzymek.gettyimagesmodel.gettyimages.Image;
-import pl.fzymek.mvvmgallery.BR;
 import pl.fzymek.mvvmgallery.R;
 import pl.fzymek.mvvmgallery.databinding.HitCardBinding;
 import pl.fzymek.mvvmgallery.viewmodel.ImageViewModel;
 
 public class GalleryAdapter extends RecyclerView.Adapter<GalleryAdapter.GalleryItemViewHolder> {
 
-    private List<Image> data = new ArrayList<>();
+    public interface OnItemClickListener {
+        void onClick(int position, Image data);
+    }
 
-    static class GalleryItemViewHolder<T extends ViewDataBinding> extends RecyclerView.ViewHolder {
+    private List<Image> data = new ArrayList<>();
+    OnItemClickListener listener;
+
+    class GalleryItemViewHolder<T extends ViewDataBinding> extends RecyclerView.ViewHolder implements View.OnClickListener {
         final T binding;
 
         GalleryItemViewHolder(T binding) {
             super(binding.getRoot());
             this.binding = binding;
+            binding.getRoot().setOnClickListener(this);
         }
+
+        @Override
+        public void onClick(View view) {
+            if (listener != null) {
+                listener.onClick(getAdapterPosition(), getItem(getAdapterPosition()).getData());
+            }
+        }
+    }
+
+    public void setListener(OnItemClickListener listener) {
+        this.listener = listener;
     }
 
     @Override
@@ -38,7 +55,7 @@ public class GalleryAdapter extends RecyclerView.Adapter<GalleryAdapter.GalleryI
     @Override
     public void onBindViewHolder(GalleryItemViewHolder holder, int position) {
         HitCardBinding binding = (HitCardBinding) holder.binding;
-        binding.setVariable(BR.image, getItem(position));
+        binding.setVariable(pl.fzymek.mvvmgallery.BR.image, getItem(position));
         binding.executePendingBindings();
     }
 
