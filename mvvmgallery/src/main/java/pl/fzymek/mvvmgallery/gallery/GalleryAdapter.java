@@ -19,10 +19,10 @@ public class GalleryAdapter extends RecyclerView.Adapter<GalleryAdapter.GalleryI
 
     private List<Image> data = new ArrayList<>();
 
-    class GalleryItemViewHolder<T extends ViewDataBinding> extends RecyclerView.ViewHolder {
-        public final T binding;
+    static class GalleryItemViewHolder<T extends ViewDataBinding> extends RecyclerView.ViewHolder {
+        final T binding;
 
-        public GalleryItemViewHolder(T binding) {
+        GalleryItemViewHolder(T binding) {
             super(binding.getRoot());
             this.binding = binding;
         }
@@ -31,6 +31,7 @@ public class GalleryAdapter extends RecyclerView.Adapter<GalleryAdapter.GalleryI
     @Override
     public GalleryItemViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         HitCardBinding binding = DataBindingUtil.inflate(LayoutInflater.from(parent.getContext()), R.layout.hit_card, parent, false);
+        //noinspection unchecked
         return new GalleryItemViewHolder(binding);
     }
 

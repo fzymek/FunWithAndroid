@@ -10,11 +10,9 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
 
-import java.util.List;
 import java.util.Random;
 
 import pl.fzymek.gettyimagesmodel.gettyimages.GettySearchResult;
-import pl.fzymek.gettyimagesmodel.gettyimages.Image;
 import pl.fzymek.mvvmgallery.config.Config;
 import pl.fzymek.mvvmgallery.databinding.ActivityMainBinding;
 import pl.fzymek.mvvmgallery.gallery.GalleryAdapter;
@@ -111,8 +109,8 @@ public class MVVMGalleryActivity extends AppCompatActivity implements SwipeRefre
         public void onNext(GettySearchResult result) {
             Timber.d("onNext");
             GettySearchResultViewModel viewModel = new GettySearchResultViewModel(result);
-            viewDataBinding.setResult(viewModel);
             viewDataBinding.setVariable(BR.result, viewModel);
+            viewDataBinding.executePendingBindings();
             showData();
         }
 
@@ -127,9 +125,6 @@ public class MVVMGalleryActivity extends AppCompatActivity implements SwipeRefre
     }
 
     void showData() {
-        List<Image> images = viewDataBinding.getResult().getResult();
-        Timber.d("Showing data %s", images);
-        adapter.setData(images);
         viewDataBinding.content.setRefreshing(false);
         viewDataBinding.recycler.setVisibility(View.VISIBLE);
         viewDataBinding.count.setVisibility(View.VISIBLE);
